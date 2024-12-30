@@ -2,6 +2,20 @@
 
 ---
 
+<script>
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      position => {
+        const { latitude, longitude } = position.coords
+        console.log('Latitude:', latitude, 'Longitude:', longitude)
+      },
+      error => {
+        console.error('Error getting location:', error.message)
+      },
+    )
+  } else console.error('Geolocation is not supported by this browser.')
+</script>
+
 <html lang="en">
   <head>
     <meta charset="utf-8" />
