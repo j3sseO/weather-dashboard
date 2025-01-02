@@ -12,9 +12,16 @@ import WeatherCard from '../components/WeatherCard.astro'
     <title>Astro</title>
   </head>
   <body>
-    <div class="flex h-screen flex-col items-center justify-center">
+    <div
+      class="flex h-screen items-center justify-center bg-gradient-to-b from-slate-800 to-slate-900 p-4"
+    >
       <LocationButton />
-      <WeatherCard />
+      <div
+        id="weather-container"
+        class="hidden w-full max-w-md rounded-xl bg-gradient-to-br from-sky-800/80 to-slate-900/90 p-6 shadow-lg ring-1 ring-sky-700/50 backdrop-blur-sm"
+      >
+        <WeatherCard />
+      </div>
     </div>
   </body>
 </html>
