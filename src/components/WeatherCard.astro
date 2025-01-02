@@ -1,111 +1,81 @@
----
-const exampleData = {
-  coord: {
-    lon: 176.3022,
-    lat: -36.7913,
-  },
-  weather: [
-    {
-      id: 803,
-      main: 'Squall',
-      description: 'broken clouds',
-      icon: '04d',
-    },
-  ],
-  base: 'stations',
-  main: {
-    temp: 22.71,
-    feels_like: 22.86,
-    temp_min: 22.36,
-    temp_max: 22.71,
-    pressure: 1007,
-    humidity: 70,
-    sea_level: 1007,
-    grnd_level: 1002,
-  },
-  visibility: 10000,
-  wind: {
-    speed: 5.65,
-    deg: 245,
-    gust: 5.63,
-  },
-  clouds: {
-    all: 56,
-  },
-  dt: 1735777017,
-  sys: {
-    type: 2,
-    id: 2002030,
-    country: 'NZ',
-    sunrise: 1735750858,
-    sunset: 1735803838,
-  },
-  timezone: 46800,
-  id: 2190324,
-  name: 'Hamilton',
-  cod: 200,
-}
-
-const videoSources = {
-  Thunderstorm: '/weather-videos/thunderstorm.mp4',
-  Drizzle: '/weather-videos/rain.mp4',
-  Rain: '/weather-videos/rain.mp4',
-  Snow: '/weather-videos/snow.mp4',
-  Mist: '/weather-videos/mist.mp4',
-  Smoke: '/weather-videos/mist.mp4',
-  Haze: '/weather-videos/mist.mp4',
-  Dust: '/weather-videos/dust.mp4',
-  Fog: '/weather-videos/mist.mp4',
-  Sand: '/weather-videos/dust.mp4',
-  Ash: '/weather-videos/ash.mp4',
-  Squall: '/weather-videos/clouds.mp4',
-  Tornado: '/weather-videos/tornado.mp4',
-  Clear: '/weather-videos/clear.mp4',
-  Clouds: '/weather-videos/clouds.mp4',
-  default: '/weather-videos/clear.mp4',
-}
-
-const videoSource =
-  videoSources[exampleData.weather[0].main as keyof typeof videoSources] ||
-  videoSources.default
----
-
 <section
-  class="relative w-full max-w-md overflow-hidden rounded-lg bg-white shadow-xl"
+  id="weather-card"
+  class="relative hidden w-full max-w-md overflow-hidden rounded-lg bg-white shadow-xl"
 >
   <div class="absolute inset-0">
-    <video autoplay muted loop class="h-full w-full object-cover">
-      <source src={videoSource} type="video/mp4" />
+    <video
+      autoplay
+      muted
+      loop
+      class="h-full w-full object-cover"
+      id="weather-video-element"
+    >
+      <source type="video/mp4" id="weather-video-source" />
       Your browser does not support the video tag.
     </video>
   </div>
 
   <div class="relative flex items-center justify-between p-6">
     <div class="space-y-1">
-      <h2 class="text-2xl font-bold text-gray-300">{exampleData.name}</h2>
-      <p class="text-3xl font-semibold text-gray-300">
-        {Math.round(exampleData.main.temp)}°C
-      </p>
+      <h2 class="text-2xl font-bold text-gray-300" id="weather-location"></h2>
+      <p class="text-3xl font-semibold text-gray-300" id="weather-temp"></p>
     </div>
     <div class="text-right">
-      <p class="text-sm text-gray-100">
-        Humidity: {exampleData.main.humidity}%
-      </p>
-      <p class="text-sm text-gray-100">
-        Wind: {Math.round(exampleData.wind.speed)} m/s
-      </p>
+      <p class="text-sm text-gray-100" id="weather-humidity"></p>
+      <p class="text-sm text-gray-100" id="weather-wind"></p>
     </div>
   </div>
 </section>
 
-<div class="relative h-48">
-  <video
-    autoplay
-    muted
-    loop
-    class="absolute inset-0 h-full w-full object-cover"
-  >
-    <source src={videoSource} type="video/mp4" />
-    Your browser does not support the video tag.
-  </video>
-</div>
+<script>
+  const weatherCard = document.getElementById('weather-card')
+  const videoSource = document.getElementById(
+    'weather-video-source',
+  ) as HTMLSourceElement
+  const videoElement = document.getElementById(
+    'weather-video-element',
+  ) as HTMLVideoElement
+  const locationElement = document.getElementById('weather-location')
+  const tempElement = document.getElementById('weather-temp')
+  const humidityElement = document.getElementById('weather-humidity')
+  const windElement = document.getElementById('weather-wind')
+
+  const videoSources = {
+    Thunderstorm: '/weather-videos/thunderstorm.mp4',
+    Drizzle: '/weather-videos/rain.mp4',
+    Rain: '/weather-videos/rain.mp4',
+    Snow: '/weather-videos/snow.mp4',
+    Mist: '/weather-videos/mist.mp4',
+    Smoke: '/weather-videos/mist.mp4',
+    Haze: '/weather-videos/mist.mp4',
+    Dust: '/weather-videos/dust.mp4',
+    Fog: '/weather-videos/mist.mp4',
+    Sand: '/weather-videos/dust.mp4',
+    Ash: '/weather-videos/ash.mp4',
+    Squall: '/weather-videos/clouds.mp4',
+    Tornado: '/weather-videos/tornado.mp4',
+    Clear: '/weather-videos/clear.mp4',
+    Clouds: '/weather-videos/clouds.mp4',
+    default: '/weather-videos/clear.mp4',
+  }
+
+  document.addEventListener('weather-data', ((event: CustomEvent) => {
+    const data = event.detail
+
+    const newVideoSource =
+      videoSources[data.weather[0].main as keyof typeof videoSources] ||
+      videoSources.default
+    videoSource.src = newVideoSource
+    videoElement.load()
+    videoElement.play()
+
+    if (locationElement) locationElement.textContent = data.name
+    if (tempElement) tempElement.textContent = `${Math.round(data.main.temp)}°C`
+    if (humidityElement)
+      humidityElement.textContent = `Humidity: ${data.main.humidity}%`
+    if (windElement)
+      windElement.textContent = `Wind: ${Math.round(data.wind.speed)} m/s`
+
+    if (weatherCard) weatherCard.classList.remove('hidden')
+  }) as EventListener)
+</script>

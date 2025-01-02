@@ -40,6 +40,13 @@
 
       const weatherData = await response.json()
       console.log('Weather data:', weatherData)
+
+      document.dispatchEvent(
+        new CustomEvent('weather-data', {
+          detail: weatherData,
+        }),
+      )
+
       locationButton.style.display = 'none'
     } catch (error) {
       console.error('Error:', error)
