@@ -7,7 +7,7 @@ const exampleData = {
   weather: [
     {
       id: 803,
-      main: 'Clear',
+      main: 'Squall',
       description: 'broken clouds',
       icon: '04d',
     },
@@ -70,7 +70,35 @@ const videoSource =
   videoSources.default
 ---
 
-<section class="relative overflow-hidden">
+<section
+  class="relative w-full max-w-md overflow-hidden rounded-lg bg-white shadow-xl"
+>
+  <div class="absolute inset-0">
+    <video autoplay muted loop class="h-full w-full object-cover">
+      <source src={videoSource} type="video/mp4" />
+      Your browser does not support the video tag.
+    </video>
+  </div>
+
+  <div class="relative flex items-center justify-between p-6">
+    <div class="space-y-1">
+      <h2 class="text-2xl font-bold text-gray-300">{exampleData.name}</h2>
+      <p class="text-3xl font-semibold text-gray-300">
+        {Math.round(exampleData.main.temp)}°C
+      </p>
+    </div>
+    <div class="text-right">
+      <p class="text-sm text-gray-100">
+        Humidity: {exampleData.main.humidity}%
+      </p>
+      <p class="text-sm text-gray-100">
+        Wind: {Math.round(exampleData.wind.speed)} m/s
+      </p>
+    </div>
+  </div>
+</section>
+
+<div class="relative h-48">
   <video
     autoplay
     muted
@@ -80,9 +108,4 @@ const videoSource =
     <source src={videoSource} type="video/mp4" />
     Your browser does not support the video tag.
   </video>
-  <div class="relative z-10 rounded-lg bg-white/80 p-4 shadow-md">
-    <h1>Current Weather</h1>
-    <!-- <p>Condition: {weatherCondition}</p> -->
-    <p>Temperature: 22°C</p>
-  </div>
-</section>
+</div>
