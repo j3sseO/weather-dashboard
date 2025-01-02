@@ -9,27 +9,40 @@
       loop
       class="h-full w-full object-cover"
       id="weather-video-element"
+      src="/weather-videos/clouds.mp4"
     >
       <source type="video/mp4" id="weather-video-source" />
       Your browser does not support the video tag.
     </video>
   </div>
 
-  <div
-    class="relative flex items-center justify-between bg-black/10 p-6 backdrop-blur-sm"
-  >
-    <div class="space-y-1">
-      <h2 class="text-2xl font-bold text-white" id="weather-location"></h2>
-      <p class="text-3xl font-semibold text-sky-100" id="weather-temp"></p>
+  <div class="relative flex flex-col bg-black/10 p-6 backdrop-blur-sm">
+    <div class="flex w-full justify-between">
+      <div class="space-y-1">
+        <h2 class="text-2xl font-bold text-white" id="weather-location">
+          Hamilton
+        </h2>
+        <p class="text-3xl font-semibold text-sky-100" id="weather-temp">
+          10°C
+        </p>
+      </div>
+      <div class="text-right">
+        <p class="text-sm text-sky-200" id="weather-humidity">Humidity: 50%</p>
+        <p class="text-sm text-sky-200" id="weather-wind">Wind: 10 m/s</p>
+      </div>
     </div>
-    <div class="text-right">
-      <p class="text-sm text-sky-200" id="weather-humidity"></p>
-      <p class="text-sm text-sky-200" id="weather-wind"></p>
+    <div class="mt-4 flex justify-end">
+      <canvas
+        id="lottie-animation"
+        class="weather-animation h-24 w-24 rounded-lg bg-gradient-to-br from-slate-800 to-slate-900"
+      ></canvas>
     </div>
   </div>
 </section>
 
 <script>
+  import { DotLottie } from '@lottiefiles/dotlottie-web'
+
   const weatherCard = document.getElementById('weather-card')
   const videoSource = document.getElementById(
     'weather-video-source',
@@ -41,6 +54,7 @@
   const tempElement = document.getElementById('weather-temp')
   const humidityElement = document.getElementById('weather-humidity')
   const windElement = document.getElementById('weather-wind')
+  const animationContainer = document.getElementById('lottie-animation')
 
   const videoSources = {
     Thunderstorm: '/weather-videos/thunderstorm.mp4',
@@ -61,6 +75,25 @@
     default: '/weather-videos/clear.mp4',
   }
 
+  const animationSources = {
+    '04d': '/animations/cloudyD.lottie',
+    rainy: '/animations/rainy.json',
+    snowy: '/animations/snowy.json',
+    cloudy: '/animations/cloudy.json',
+    default: '/animations/default.json',
+  }
+
+  let lottieAnimation: DotLottie | null = null
+
+  if (animationContainer) {
+    lottieAnimation = new DotLottie({
+      autoplay: true,
+      loop: true,
+      canvas: animationContainer as HTMLCanvasElement,
+      src: '/animations/cloudyD.lottie',
+    })
+  }
+
   document.addEventListener('weather-data', ((event: CustomEvent) => {
     const data = event.detail
 
@@ -77,6 +110,17 @@
       humidityElement.textContent = `Humidity: ${data.main.humidity}%`
     if (windElement)
       windElement.textContent = `Wind: ${Math.round(data.wind.speed)} m/s`
+
+    const animationPath =
+      animationSources[data.weather[0].icon as keyof typeof animationSources] ||
+      animationSources.default
+
+    if (lottieAnimation) lottieAnimation.destroy()
+
+    lottieAnimation = new DotLottie({
+      canvas: animationContainer as HTMLCanvasElement,
+      src: animationPath,
+    })
 
     if (weatherCard) weatherCard.classList.remove('hidden')
   }) as EventListener)
