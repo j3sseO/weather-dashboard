@@ -1,48 +1,88 @@
-<script>
-  const exampleData = {
-    coord: {
-      lon: 176.3022,
-      lat: -36.7913,
+---
+const exampleData = {
+  coord: {
+    lon: 176.3022,
+    lat: -36.7913,
+  },
+  weather: [
+    {
+      id: 803,
+      main: 'Clouds',
+      description: 'broken clouds',
+      icon: '04d',
     },
-    weather: [
-      {
-        id: 803,
-        main: 'Clouds',
-        description: 'broken clouds',
-        icon: '04d',
-      },
-    ],
-    base: 'stations',
-    main: {
-      temp: 22.71,
-      feels_like: 22.86,
-      temp_min: 22.36,
-      temp_max: 22.71,
-      pressure: 1007,
-      humidity: 70,
-      sea_level: 1007,
-      grnd_level: 1002,
-    },
-    visibility: 10000,
-    wind: {
-      speed: 5.65,
-      deg: 245,
-      gust: 5.63,
-    },
-    clouds: {
-      all: 56,
-    },
-    dt: 1735777017,
-    sys: {
-      type: 2,
-      id: 2002030,
-      country: 'NZ',
-      sunrise: 1735750858,
-      sunset: 1735803838,
-    },
-    timezone: 46800,
-    id: 2190324,
-    name: 'Hamilton',
-    cod: 200,
-  }
-</script>
+  ],
+  base: 'stations',
+  main: {
+    temp: 22.71,
+    feels_like: 22.86,
+    temp_min: 22.36,
+    temp_max: 22.71,
+    pressure: 1007,
+    humidity: 70,
+    sea_level: 1007,
+    grnd_level: 1002,
+  },
+  visibility: 10000,
+  wind: {
+    speed: 5.65,
+    deg: 245,
+    gust: 5.63,
+  },
+  clouds: {
+    all: 56,
+  },
+  dt: 1735777017,
+  sys: {
+    type: 2,
+    id: 2002030,
+    country: 'NZ',
+    sunrise: 1735750858,
+    sunset: 1735803838,
+  },
+  timezone: 46800,
+  id: 2190324,
+  name: 'Hamilton',
+  cod: 200,
+}
+
+const videoSources = {
+  Thunderstorm: '/weather-videos/sunny.mp4',
+  Drizzle: '/weather-videos/rainy.mp4',
+  Rain: '/weather-videos/snowy.mp4',
+  Snow: '/weather-videos/cloudy.mp4',
+  Mist: '/weather-videos/default.mp4',
+  Smoke: '/weather-videos/default.mp4',
+  Haze: '/weather-videos/default.mp4',
+  Dust: '/weather-videos/default.mp4',
+  Fog: '/weather-videos/default.mp4',
+  Sand: '/weather-videos/default.mp4',
+  Ash: '/weather-videos/default.mp4',
+  Squall: '/weather-videos/default.mp4',
+  Tornado: '/weather-videos/default.mp4',
+  Clear: '/weather-videos/default.mp4',
+  Clouds: '/weather-videos/cloudy.mp4',
+  default: '/weather-videos/default.mp4',
+}
+
+const videoSource =
+  videoSources[exampleData.weather[0].main as keyof typeof videoSources] ||
+  videoSources.default
+---
+
+<section class="relative overflow-hidden">
+  <video
+    autoplay
+    muted
+    loop
+    class="absolute inset-0 h-full w-full object-cover"
+  >
+    <source src={videoSource} type="video/mp4" />
+    Your browser does not support the video tag.
+  </video>
+  <div class="relative z-10 rounded-lg bg-white/80 p-4 shadow-md">
+    <h1>Current Weather</h1>
+    <!-- <p>Condition: {weatherCondition}</p> -->
+    <p>Temperature: 22°C</p>
+  </div>
+</section>
