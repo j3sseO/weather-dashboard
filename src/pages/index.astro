@@ -1,20 +1,6 @@
 ---
-
+import LocationButton from '../components/LocationButton.astro'
 ---
-
-<script>
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(
-      position => {
-        const { latitude, longitude } = position.coords
-        console.log('Latitude:', latitude, 'Longitude:', longitude)
-      },
-      error => {
-        console.error('Error getting location:', error.message)
-      },
-    )
-  } else console.error('Geolocation is not supported by this browser.')
-</script>
 
 <html lang="en">
   <head>
@@ -25,6 +11,8 @@
     <title>Astro</title>
   </head>
   <body>
-    <h1>Astro</h1>
+    <div class="flex h-screen flex-col items-center justify-center">
+      <LocationButton />
+    </div>
   </body>
 </html>

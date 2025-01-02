@@ -1,0 +1,52 @@
+<button
+  id="location-button"
+  class="rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
+>
+  Get location
+</button>
+
+<script>
+  const locationButton = document.querySelector(
+    '#location-button',
+  ) as HTMLButtonElement
+
+  async function getLocation() {
+    if (!navigator.geolocation) {
+      console.error('Geolocation is not supported by this browser.')
+      return
+    }
+
+    locationButton.disabled = true
+    locationButton.textContent = 'Getting location...'
+
+    try {
+      const position = await new Promise<GeolocationPosition>(
+        (resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(resolve, reject)
+        },
+      )
+
+      const { latitude, longitude } = position.coords
+      console.log('Coordinates:', { latitude, longitude })
+
+      const response = await fetch('/api/getCurrentWeather', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ lat: latitude, lon: longitude }),
+      })
+
+      if (!response.ok)
+        throw new Error(`HTTP error! status: ${response.status}`)
+
+      const weatherData = await response.json()
+      console.log('Weather data:', weatherData)
+      locationButton.style.display = 'none'
+    } catch (error) {
+      console.error('Error:', error)
+      locationButton.disabled = false
+      locationButton.textContent = 'Get location'
+    }
+  }
+
+  locationButton?.addEventListener('click', getLocation)
+</script>
