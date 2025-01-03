@@ -9,7 +9,6 @@
       loop
       class="h-full w-full object-cover"
       id="weather-video-element"
-      src="/weather-videos/clouds.mp4"
     >
       <source type="video/mp4" id="weather-video-source" />
       Your browser does not support the video tag.
@@ -26,16 +25,13 @@
           10°C
         </p>
       </div>
-      <div class="text-right">
-        <p class="text-sm text-sky-200" id="weather-humidity">Humidity: 50%</p>
-        <p class="text-sm text-sky-200" id="weather-wind">Wind: 10 m/s</p>
-      </div>
-    </div>
-    <div class="mt-4 flex justify-end">
       <canvas
         id="lottie-animation"
-        class="weather-animation h-24 w-24 rounded-lg bg-gradient-to-br from-slate-800 to-slate-900"
-      ></canvas>
+        class="weather-animation -mr-2 -mt-1 h-20 w-20"></canvas>
+    </div>
+    <div>
+      <p class="text-sm text-sky-200" id="weather-humidity">Humidity: 50%</p>
+      <p class="text-sm text-sky-200" id="weather-wind">Wind: 10 m/s</p>
     </div>
   </div>
 </section>
@@ -76,11 +72,23 @@
   }
 
   const animationSources = {
-    '04d': '/animations/cloudyD.lottie',
-    rainy: '/animations/rainy.json',
-    snowy: '/animations/snowy.json',
-    cloudy: '/animations/cloudy.json',
-    default: '/animations/default.json',
+    '01d': '/animations/clearSkyD.lottie',
+    '01n': '/animations/clearSkyN.lottie',
+    '02d': '/animations/cloudyD.lottie',
+    '02n': '/animations/cloudyN.lottie',
+    '03d': '/animations/cloudyD.lottie',
+    '03n': '/animations/cloudyN.lottie',
+    '04d': '/animations/moreCloudyD.lottie',
+    '04n': '/animations/moreCloudyN.lottie',
+    '09d': '/animations/heavyRainD.lottie',
+    '09n': '/animations/heavyRainN.lottie',
+    '10d': '/animations/lightRainD.lottie',
+    '10n': '/animations/lightRainN.lottie',
+    '11d': '/animations/lightningD.lottie',
+    '11n': '/animations/lightningN.lottie',
+    '13d': '/animations/snowD.lottie',
+    '13n': '/animations/snowN.lottie',
+    default: '/animations/default.lottie',
   }
 
   let lottieAnimation: DotLottie | null = null
@@ -90,7 +98,7 @@
       autoplay: true,
       loop: true,
       canvas: animationContainer as HTMLCanvasElement,
-      src: '/animations/cloudyD.lottie',
+      src: '/animations/lightRainN.lottie',
     })
   }
 
@@ -119,6 +127,8 @@
 
     lottieAnimation = new DotLottie({
       canvas: animationContainer as HTMLCanvasElement,
+      autoplay: true,
+      loop: true,
       src: animationPath,
     })
 
