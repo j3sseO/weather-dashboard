@@ -1,6 +1,7 @@
 ---
 import LocationButton from '../components/LocationButton.astro'
-import { forecastExampleData } from '../components/exampleData'
+import { forecastExampleData } from '../data/exampleData'
+import weatherCodes from '../data/weatherCodes.json'
 ---
 
 <html lang="en">
@@ -13,39 +14,39 @@ import { forecastExampleData } from '../components/exampleData'
   </head>
   <body>
     <div
-      class="flex h-screen items-center justify-center bg-gradient-to-b from-slate-800 to-slate-900 p-4"
+      class="flex h-screen flex-col items-center bg-gradient-to-b from-slate-800 to-slate-900 p-4"
     >
-      <LocationButton />
-      <div
-        class="w-full max-w-md rounded-xl bg-gradient-to-br from-sky-800/80 to-slate-900/90 p-6 shadow-lg ring-1 ring-sky-700/50 backdrop-blur-sm"
-      >
-        <section
-          id="weather-card"
-          class="relative w-full max-w-md overflow-hidden rounded-lg bg-gradient-to-br from-slate-800 to-slate-900 shadow-xl"
-        >
-          <div class="relative flex flex-col bg-black/10 p-6 backdrop-blur-sm">
-            <div class="flex w-full justify-between">
-              <div class="space-y-1">
-                <h2 class="text-2xl font-bold text-white" id="weather-location">
-                  {forecastExampleData.locationData.address.city_district},
-                  {forecastExampleData.locationData.address.city}
-                </h2>
-                <p
-                  class="text-3xl font-semibold text-sky-100"
-                  id="weather-temp"
-                >
-                  10°C
-                </p>
-              </div>
-            </div>
-            <div>
-              <p class="text-sm text-sky-200" id="weather-humidity">
-                Humidity: 50%
-              </p>
-              <p class="text-sm text-sky-200" id="weather-wind">Wind: 10 m/s</p>
-            </div>
-          </div>
-        </section>
+      <div class="w-full">
+        <LocationButton />
+      </div>
+      <div class="flex flex-col items-center space-y-2">
+        <h2 class="text-2xl font-bold text-white" id="weather-location">
+          {forecastExampleData.locationData.address.city_district},
+          {forecastExampleData.locationData.address.city}
+        </h2>
+        <h2 class="text-3xl font-semibold text-white" id="weather-temp">
+          {
+            forecastExampleData.weatherData.currentData.data.values.temperature.toFixed(
+              1,
+            )
+          }°C
+        </h2>
+        <div class="flex flex-col items-center">
+          <p class="text-white" id="weather-description">
+            {
+              weatherCodes.weatherCode[
+                forecastExampleData.weatherData.currentData.data.values.weatherCode.toString() as keyof typeof weatherCodes.weatherCode
+              ] ?? 'Unknown'
+            }
+          </p>
+          <p class="text-gray-400" id="weather-description">
+            Feels like {
+              forecastExampleData.weatherData.currentData.data.values.temperatureApparent.toFixed(
+                1,
+              )
+            }°C
+          </p>
+        </div>
       </div>
     </div>
   </body>
