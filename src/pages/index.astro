@@ -1,6 +1,6 @@
 ---
 import LocationButton from '../components/LocationButton.astro'
-import WeatherCard from '../components/WeatherCard.astro'
+import { forecastExampleData } from '../components/exampleData'
 ---
 
 <html lang="en">
@@ -17,10 +17,35 @@ import WeatherCard from '../components/WeatherCard.astro'
     >
       <LocationButton />
       <div
-        id="weather-container"
         class="w-full max-w-md rounded-xl bg-gradient-to-br from-sky-800/80 to-slate-900/90 p-6 shadow-lg ring-1 ring-sky-700/50 backdrop-blur-sm"
       >
-        <WeatherCard />
+        <section
+          id="weather-card"
+          class="relative w-full max-w-md overflow-hidden rounded-lg bg-gradient-to-br from-slate-800 to-slate-900 shadow-xl"
+        >
+          <div class="relative flex flex-col bg-black/10 p-6 backdrop-blur-sm">
+            <div class="flex w-full justify-between">
+              <div class="space-y-1">
+                <h2 class="text-2xl font-bold text-white" id="weather-location">
+                  {forecastExampleData.locationData.address.city_district},
+                  {forecastExampleData.locationData.address.city}
+                </h2>
+                <p
+                  class="text-3xl font-semibold text-sky-100"
+                  id="weather-temp"
+                >
+                  10°C
+                </p>
+              </div>
+            </div>
+            <div>
+              <p class="text-sm text-sky-200" id="weather-humidity">
+                Humidity: 50%
+              </p>
+              <p class="text-sm text-sky-200" id="weather-wind">Wind: 10 m/s</p>
+            </div>
+          </div>
+        </section>
       </div>
     </div>
   </body>
