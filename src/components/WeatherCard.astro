@@ -21,25 +21,11 @@
 </section>
 
 <script>
-  import { DotLottie } from '@lottiefiles/dotlottie-web'
-
   const weatherCard = document.getElementById('weather-card')
   const locationElement = document.getElementById('weather-location')
   const tempElement = document.getElementById('weather-temp')
   const humidityElement = document.getElementById('weather-humidity')
   const windElement = document.getElementById('weather-wind')
-  const animationContainer = document.getElementById('lottie-animation')
-
-  let lottieAnimation: DotLottie | null = null
-
-  if (animationContainer) {
-    lottieAnimation = new DotLottie({
-      autoplay: true,
-      loop: true,
-      canvas: animationContainer as HTMLCanvasElement,
-      src: '/animations/lightRainN.lottie',
-    })
-  }
 
   document.addEventListener('weather-data', ((event: CustomEvent) => {
     const data = event.detail
@@ -50,8 +36,6 @@
       humidityElement.textContent = `Humidity: ${data.main.humidity}%`
     if (windElement)
       windElement.textContent = `Wind: ${Math.round(data.wind.speed)} m/s`
-
-    if (lottieAnimation) lottieAnimation.destroy()
 
     if (weatherCard) weatherCard.classList.remove('hidden')
   }) as EventListener)
