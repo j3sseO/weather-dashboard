@@ -1,0 +1,67 @@
+---
+type Props = {
+  dailyWeatherData: {
+    values: { temperatureAvg: number }
+  }[]
+}
+const { dailyWeatherData } = Astro.props
+
+const today = new Date()
+const currentDayIndex = today.getDay()
+
+const days = [
+  'Sunday',
+  'Monday',
+  'Tuesday',
+  'Wednesday',
+  'Thursday',
+  'Friday',
+  'Saturday',
+]
+
+const weekDays = Array.from({ length: 6 }, (_, i) => {
+  const dayIndex = (currentDayIndex + i) % 7
+  return days[dayIndex]
+})
+
+const averageTemp = dailyWeatherData.map(day => day.values.temperatureAvg)
+---
+
+<div
+  class="flex flex-col gap-2 rounded-lg bg-gray-800/50 p-4 text-white backdrop-blur-sm"
+>
+  {
+    weekDays.map((day, index) => {
+      const weather = dailyWeatherData[index]
+      return (
+        <button
+          data-index={index}
+          class="day-button flex items-center justify-between rounded p-2 transition-colors hover:bg-white/10"
+          class:list={[{ 'bg-white/5': index === 0 }]}
+        >
+          <span class="text-lg">{day}</span>
+          <div class="ml-32 flex items-center gap-4">
+            <span class="text-lg">
+              {averageTemp[index]?.toFixed(0) ?? ''}°C
+            </span>
+          </div>
+        </button>
+      )
+    })
+  }
+</div>
+
+<script>
+  const buttons = document.querySelectorAll('.day-button')
+  let selectedIndex = 0
+
+  buttons.forEach(button => {
+    button.addEventListener('click', () => {
+      buttons.forEach(btn => btn.classList.remove('bg-white/5'))
+
+      button.classList.add('bg-white/5')
+
+      selectedIndex = parseInt(button.getAttribute('data-index') || '0')
+    })
+  })
+</script>

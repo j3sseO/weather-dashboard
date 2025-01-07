@@ -2,6 +2,7 @@
 import LocationButton from '../components/LocationButton.astro'
 import { forecastExampleData } from '../data/exampleData'
 import weatherCodes from '../data/weatherCodes.json'
+import DaySelector from '../components/DaySelector.astro'
 ---
 
 <html lang="en">
@@ -48,6 +49,10 @@ import weatherCodes from '../data/weatherCodes.json'
           </p>
         </div>
       </div>
+      <DaySelector
+        dailyWeatherData={forecastExampleData.weatherData.weatherData.timelines
+          .daily}
+      />
     </div>
   </body>
 </html>
