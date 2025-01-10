@@ -1,0 +1,119 @@
+<div class="h-64 w-full bg-gray-800/50">
+  <canvas id="temperatureChart" class="h-full w-full"></canvas>
+</div>
+
+<script>
+  import Chart from 'chart.js/auto'
+  import { forecastExampleData } from '../data/exampleData'
+
+  window.addEventListener('weather-data', (event: any) => {
+    console.log('Weather data:', event.detail)
+  })
+
+  window.addEventListener('daySelected', (event: any) => {
+    console.log('Day selected:', event.detail.selectedIndex)
+  })
+
+  let chart: Chart | null = null
+
+  function updateChart(selectedDay: number) {
+    // Calculate start and end indexes for the selected day
+    const startIndex = selectedDay * 24
+    const endIndex = startIndex + 24
+
+    // Get the data for the selected 24-hour period
+    const times = forecastExampleData.weatherData.weatherData.timelines.hourly
+      .slice(startIndex, endIndex)
+      .map(hour => hour.time)
+
+    const formattedTimes = times
+      .filter(
+        (_, index, array) =>
+          index === 0 || index % 2 === 0 || index === array.length - 1,
+      )
+      .map(time => time.split('T')[1].slice(0, 5))
+
+    const temperatures =
+      forecastExampleData.weatherData.weatherData.timelines.hourly
+        .slice(startIndex, endIndex)
+        .filter(
+          (_, index, array) =>
+            index === 0 || index % 2 === 0 || index === array.length - 1,
+        )
+        .map(hour => hour.values.temperature)
+
+    // If chart exists, destroy it before creating a new one
+    if (chart) chart.destroy()
+
+    const ctx = document.getElementById('temperatureChart') as HTMLCanvasElement
+    chart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: formattedTimes,
+        datasets: [
+          {
+            data: temperatures,
+            fill: true,
+            borderColor: 'rgba(255, 255, 255, 0.8)',
+            backgroundColor: 'rgba(255, 255, 255, 0.1)',
+            tension: 0.4,
+            pointRadius: 4,
+            pointBackgroundColor: 'rgba(255, 255, 255, 0.8)',
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: false,
+          },
+        },
+        scales: {
+          y: {
+            display: false,
+            // suggestedMin: Math.min(...temperatures) - 2,
+            // suggestedMax: Math.max(...temperatures) + 2,
+          },
+          x: {
+            grid: {
+              color: 'rgba(255, 255, 255, 0.1)',
+            },
+            ticks: {
+              color: 'rgba(255, 255, 255, 0.8)',
+            },
+          },
+        },
+        elements: {
+          point: {
+            // This will show the temperature values above each point
+            // afterDraw: (chart: any) => {
+            //   const ctx = chart.ctx
+            //   chart.data.datasets.forEach((dataset: any, i: number) => {
+            //     const meta = chart.getDatasetMeta(i)
+            //     meta.data.forEach((point: any, index: number) => {
+            //       const value = dataset.data[index]
+            //       const x = point.x
+            //       const y = point.y - 10
+            //       ctx.fillStyle = 'white'
+            //       ctx.font = '14px Arial'
+            //       ctx.textAlign = 'center'
+            //       ctx.fillText(`${value}°`, x, y)
+            //     })
+            //   })
+            // },
+          },
+        },
+      },
+    })
+  }
+
+  // Initialize with day 0
+  updateChart(0)
+
+  // Listen for day selection changes
+  window.addEventListener('daySelected', (event: any) => {
+    updateChart(event.detail.selectedIndex)
+  })
+</script>

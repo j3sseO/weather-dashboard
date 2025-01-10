@@ -62,6 +62,10 @@ const averageTemp = dailyWeatherData.map(day => day.values.temperatureAvg)
       button.classList.add('bg-white/5')
 
       selectedIndex = parseInt(button.getAttribute('data-index') || '0')
+
+      window.dispatchEvent(
+        new CustomEvent('daySelected', { detail: { selectedIndex } }),
+      )
     })
   })
 </script>

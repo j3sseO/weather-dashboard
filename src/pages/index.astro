@@ -3,6 +3,20 @@ import LocationButton from '../components/LocationButton.astro'
 import { forecastExampleData } from '../data/exampleData'
 import weatherCodes from '../data/weatherCodes.json'
 import DaySelector from '../components/DaySelector.astro'
+import TemperatureGraph from '../components/TemperatureGraph.astro'
+
+const dailyTemperatures = Array.from({ length: 6 }, (_, dayIndex) => {
+  const startIdx = dayIndex * 24
+  return forecastExampleData.weatherData.weatherData.timelines.hourly
+    .slice(startIdx, startIdx + 24)
+    .map(hour => ({
+      temperature: hour.values.temperature,
+      time: hour.time,
+    }))
+})
+
+const initialTemperatures = dailyTemperatures[0].map(hour => hour.temperature)
+const initialTimes = dailyTemperatures[0].map(hour => hour.time)
 ---
 
 <html lang="en">
@@ -11,6 +25,7 @@ import DaySelector from '../components/DaySelector.astro'
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width" />
     <meta name="generator" content={Astro.generator} />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4" defer></script>
     <title>Astro</title>
   </head>
   <body>
@@ -49,10 +64,13 @@ import DaySelector from '../components/DaySelector.astro'
           </p>
         </div>
       </div>
-      <DaySelector
-        dailyWeatherData={forecastExampleData.weatherData.weatherData.timelines
-          .daily}
-      />
+      <div class="flex w-full flex-row items-center gap-8 px-24">
+        <DaySelector
+          dailyWeatherData={forecastExampleData.weatherData.weatherData
+            .timelines.daily}
+        />
+        <TemperatureGraph />
+      </div>
     </div>
   </body>
 </html>
