@@ -1,0 +1,78 @@
+<div class="rounded-lg bg-gray-800/50 p-4 text-white backdrop-blur-sm">
+  <h2 class="text-sm text-gray-400">UV Index</h2>
+  <p class="uvIndex mt-3 text-3xl"></p>
+  <p class="uvIndexRating mb-3 text-sm text-gray-400"></p>
+
+  <div class="mt-3 w-full">
+    <div
+      class="relative h-2 rounded-full bg-gradient-to-r from-green-500 via-orange-500 via-yellow-500 to-red-600"
+    >
+      <div
+        class="slider-dot absolute top-1/2 h-4 w-4 rounded-full border-2 border-gray-200 bg-white shadow-md"
+        style="transform: translate(-50%, -50%)"
+      >
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  import { forecastExampleData } from '../data/exampleData'
+
+  /**
+   * UV Index Rating Lookup
+   * https://www.tomorrow.io/weather-api/data-layers/uv-index/
+   */
+  const uvIndexRatingLookup = {
+    '0,1,2': 'Low',
+    '3,4,5': 'Moderate',
+    '6,7': 'High',
+    '8,9,10': 'Very High',
+    '11': 'Extreme',
+  }
+
+  const updateUvDisplay = (uvIndex: number) => {
+    // Update text display
+    const uvIndexElement = document.querySelector('.uvIndex')
+    if (uvIndexElement) uvIndexElement.textContent = uvIndex.toString()
+
+    const uvIndexRatingElement = document.querySelector('.uvIndexRating')
+    if (uvIndexRatingElement) {
+      const rating =
+        uvIndex <= 2
+          ? '0,1,2'
+          : uvIndex <= 5
+            ? '3,4,5'
+            : uvIndex <= 7
+              ? '6,7'
+              : uvIndex <= 10
+                ? '8,9,10'
+                : ('11' as const)
+      uvIndexRatingElement.textContent = uvIndexRatingLookup[rating]
+    }
+
+    // Update slider dot position
+    const sliderDot = document.querySelector('.slider-dot')
+
+    if (sliderDot) {
+      const normalizedValue = Math.max(0, Math.min(11, uvIndex))
+      const position = (normalizedValue / 11) * 100
+      sliderDot.style.left = `${position}%`
+    }
+  }
+
+  // Initial setup
+  updateUvDisplay(
+    forecastExampleData.weatherData.weatherData.timelines.daily[0].values
+      .uvIndexAvg ?? 0,
+  )
+
+  // Update on day selection
+  window.addEventListener('daySelected', (event: any) => {
+    updateUvDisplay(
+      forecastExampleData.weatherData.weatherData.timelines.daily[
+        event.detail.selectedIndex
+      ].values.uvIndexAvg ?? 0,
+    )
+  })
+</script>

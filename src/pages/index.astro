@@ -4,6 +4,7 @@ import { forecastExampleData } from '../data/exampleData'
 import weatherCodes from '../data/weatherCodes.json'
 import DaySelector from '../components/DaySelector.astro'
 import TemperatureGraph from '../components/TemperatureGraph.astro'
+import UVIndexCard from '../components/UVIndexCard.astro'
 
 const dailyTemperatures = Array.from({ length: 6 }, (_, dayIndex) => {
   const startIdx = dayIndex * 24
@@ -64,12 +65,13 @@ const initialTimes = dailyTemperatures[0].map(hour => hour.time)
           </p>
         </div>
       </div>
-      <div class="flex w-full flex-row items-center gap-8 px-24">
+      <div class="grid w-full grid-cols-[0.5fr_1.5fr] gap-8 px-24">
         <DaySelector
           dailyWeatherData={forecastExampleData.weatherData.weatherData
             .timelines.daily}
         />
         <TemperatureGraph />
+        <UVIndexCard />
       </div>
     </div>
   </body>
