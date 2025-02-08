@@ -1,67 +1,77 @@
-<div class="rounded-lg bg-gray-800/50 p-4 text-white backdrop-blur-sm">
-  <div class="relative mx-auto flex h-48 w-48 items-center justify-center">
-    <svg class="h-full w-full -rotate-90 transform" viewBox="0 0 200 200">
-      <circle
-        cx="100"
-        cy="100"
-        r="80"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="12"
-        class="text-gray-200 opacity-25"></circle>
-      <circle
-        cx="100"
-        cy="100"
-        r="80"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="12"
-        class="humidity-gauge text-blue-500"
-        stroke-linecap="round"></circle>
-    </svg>
+---
+import { forecastExampleData } from '../data/exampleData'
+---
 
-    <div class="absolute flex flex-col items-center justify-center text-white">
-      <span class="humidity-value text-4xl font-semibold"></span>
-      <span class="text-sm text-gray-300">Humidity</span>
+<div class="rounded-lg bg-gray-800/50 p-4 text-white backdrop-blur-sm">
+  <h2 class="text-sm text-gray-400">Humidity</h2>
+
+  <div class="relative mx-auto mt-4 h-32 w-32">
+    <div class="relative h-full w-full">
+      <svg class="h-full w-full" viewBox="0 0 100 100">
+        <!-- Clipping path for the circle -->
+        <defs>
+          <clipPath id="circleClip">
+            <circle cx="50" cy="50" r="45"></circle>
+          </clipPath>
+        </defs>
+
+        <circle cx="50" cy="50" r="45" class="fill-gray-800/80"></circle>
+
+        <path
+          d="M0 100 L0 45 Q25 35, 50 45 Q75 55, 100 45 L100 100 Z"
+          class="fill-blue-900/30"
+          clip-path="url(#circleClip)"></path>
+
+        <circle
+          cx="50"
+          cy="50"
+          r="45"
+          fill="none"
+          class="stroke-white/20"
+          stroke-width="2"></circle>
+
+        <circle
+          cx="50"
+          cy="50"
+          r="45"
+          fill="none"
+          class="progress-circle stroke-white/60 [stroke-dasharray:283]"
+          stroke-width="2"
+          stroke-linecap="round"
+          transform="rotate(-90 50 50)"></circle>
+      </svg>
+
+      <div class="absolute inset-0 flex items-center justify-center">
+        <span class="humidity-text text-3xl font-medium text-white"></span>
+      </div>
     </div>
   </div>
 </div>
+
+<style>
+  .progress-circle {
+    transition: stroke-dashoffset 0.5s ease;
+  }
+</style>
 
 <script>
   import { forecastExampleData } from '../data/exampleData'
 
   const updateHumidityDisplay = (humidity: number) => {
-    // Normalise humidity value between 0 and 100
-    const normalisedHumidity = Math.min(100, Math.max(0, humidity))
+    const normalizedHumidity = Math.min(100, Math.max(0, humidity))
 
-    const humidityText = document.querySelector('.humidityText')
-    const humidityValue = document.querySelector('.humidity-value')
-    if (humidityText)
-      humidityText.textContent = `${Math.round(normalisedHumidity)}%`
-    if (humidityValue)
-      humidityValue.textContent = `${Math.round(normalisedHumidity)}%`
-
-    const gauge = document.querySelector('.humidity-gauge') as SVGCircleElement
-    if (gauge) {
-      const radius = 80
-      const circumference = 2 * Math.PI * radius
-      const offset = ((100 - normalisedHumidity) / 100) * circumference
-
-      gauge.style.strokeDasharray = `${circumference} ${circumference}`
-      gauge.style.strokeDashoffset = offset.toString()
-
-      // Update color based on humidity level
-      if (normalisedHumidity < 30) {
-        gauge.classList.remove('text-yellow-500', 'text-red-500')
-        gauge.classList.add('text-blue-500')
-      } else if (normalisedHumidity <= 60) {
-        gauge.classList.remove('text-blue-500', 'text-red-500')
-        gauge.classList.add('text-yellow-500')
-      } else {
-        gauge.classList.remove('text-yellow-500', 'text-blue-500')
-        gauge.classList.add('text-red-500')
-      }
+    const progressCircle = document.querySelector(
+      '.progress-circle',
+    ) as SVGCircleElement
+    if (progressCircle) {
+      const circumference = 2 * Math.PI * 45 // 2πr where r=45
+      const offset = circumference * (1 - normalizedHumidity / 100)
+      progressCircle.style.strokeDashoffset = offset.toString()
     }
+
+    const humidityText = document.querySelector('.humidity-text')
+    if (humidityText)
+      humidityText.textContent = `${Math.round(normalizedHumidity)}%`
   }
 
   // Initial setup
