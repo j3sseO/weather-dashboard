@@ -6,6 +6,7 @@ import DaySelector from '../components/DaySelector.astro'
 import TemperatureGraph from '../components/TemperatureGraph.astro'
 import UVIndexCard from '../components/UVIndexCard.astro'
 import HumidityCard from '../components/HumidityCard.astro'
+import WindCard from '../components/WindCard.astro'
 
 const dailyTemperatures = Array.from({ length: 6 }, (_, dayIndex) => {
   const startIdx = dayIndex * 24
@@ -77,6 +78,7 @@ const initialTimes = dailyTemperatures[0].map(hour => hour.time)
         <div class="grid grid-cols-[0.5fr_0.5fr_0.5fr] gap-4">
           <UVIndexCard />
           <HumidityCard />
+          <WindCard />
         </div>
       </div>
     </div>

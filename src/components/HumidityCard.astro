@@ -1,14 +1,9 @@
----
-import { forecastExampleData } from '../data/exampleData'
----
-
 <div class="rounded-lg bg-gray-800/50 p-4 text-white backdrop-blur-sm">
   <h2 class="text-sm text-gray-400">Humidity</h2>
 
-  <div class="relative mx-auto mt-4 h-32 w-32">
+  <div class="relative mx-auto mt-4 h-40 w-40">
     <div class="relative h-full w-full">
       <svg class="h-full w-full" viewBox="0 0 100 100">
-        <!-- Clipping path for the circle -->
         <defs>
           <clipPath id="circleClip">
             <circle cx="50" cy="50" r="45"></circle>
@@ -28,7 +23,7 @@ import { forecastExampleData } from '../data/exampleData'
           r="45"
           fill="none"
           class="stroke-white/20"
-          stroke-width="2"></circle>
+          stroke-width="8"></circle>
 
         <circle
           cx="50"
@@ -36,7 +31,7 @@ import { forecastExampleData } from '../data/exampleData'
           r="45"
           fill="none"
           class="progress-circle stroke-white/60 [stroke-dasharray:283]"
-          stroke-width="2"
+          stroke-width="8"
           stroke-linecap="round"
           transform="rotate(-90 50 50)"></circle>
       </svg>
