@@ -1,5 +1,7 @@
-<div class="flex h-64 h-full w-full items-center justify-center bg-gray-800/50">
-  <canvas id="temperatureChart"></canvas>
+<div
+  class="flex h-64 h-full w-full items-center justify-center rounded-lg bg-gray-800/50"
+>
+  <canvas id="temperatureChart" class="p-6"></canvas>
 </div>
 
 <script>
@@ -40,14 +42,18 @@
           (_, index, array) =>
             index === 0 || index % 2 === 0 || index === array.length - 1,
         )
-        .map(hour => hour.values.temperature)
+        .map(hour => Number(hour.values.temperature.toFixed(0)))
+        .map(hour => {
+          if (hour === -0) return 0
+          return hour
+        })
 
     // If chart exists, destroy it before creating a new one
     if (chart) chart.destroy()
 
     const ctx = document.getElementById('temperatureChart') as HTMLCanvasElement
     chart = new Chart(ctx, {
-      type: 'line',
+      type: 'line' as const,
       data: {
         labels: formattedTimes,
         datasets: [
@@ -65,24 +71,16 @@
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            display: false,
-          },
-        },
+        plugins: { legend: { display: false } },
         scales: {
           y: {
             display: false,
-            // suggestedMin: Math.min(...temperatures) - 2,
-            // suggestedMax: Math.max(...temperatures) + 2,
+            suggestedMin: Math.min(...temperatures) - 2,
+            suggestedMax: Math.max(...temperatures) + 2,
           },
           x: {
-            grid: {
-              color: 'rgba(255, 255, 255, 0.1)',
-            },
-            ticks: {
-              color: 'rgba(255, 255, 255, 0.8)',
-            },
+            grid: { color: 'rgba(255, 255, 255, 0.1)' },
+            ticks: { color: 'rgba(255, 255, 255, 0.8)' },
           },
         },
         elements: {
