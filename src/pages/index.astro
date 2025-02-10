@@ -58,8 +58,6 @@ import WindCard from '../components/WindCard.astro'
   const weatherDescription = document.getElementById('weather-description')
   const weatherTemperature = document.getElementById('weather-temperature')
 
-  console.log(weatherData)
-
   if (weatherLocation)
     weatherLocation.textContent =
       weatherData?.locationData.display_name ?? 'Unknown location'

@@ -6,6 +6,7 @@
 
 <script>
   import Chart from 'chart.js/auto'
+  import { toZonedTime } from 'date-fns-tz'
   import { storage } from '../data/storage'
 
   const weatherData = storage.getWeatherData()
@@ -24,14 +25,25 @@
     // Get the data for the selected 24-hour period
     const times = weatherData?.weatherData.weatherData.timelines.hourly
       .slice(startIndex, endIndex)
-      .map(hour => hour.time)
+      .map(hour => {
+        const zonedTime = toZonedTime(
+          new Date(hour.time),
+          Intl.DateTimeFormat().resolvedOptions().timeZone,
+        )
+        return zonedTime
+      })
 
     const formattedTimes = times
       ?.filter(
         (_, index, array) =>
           index === 0 || index % 2 === 0 || index === array.length - 1,
       )
-      .map(time => time.split('T')[1].slice(0, 5))
+      .map(time =>
+        time.toLocaleTimeString('en-GB', {
+          hour: '2-digit',
+          minute: '2-digit',
+        }),
+      )
 
     const temperatures = weatherData?.weatherData.weatherData.timelines.hourly
       .slice(startIndex, endIndex)
