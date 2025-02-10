@@ -6,17 +6,15 @@
 
 <script>
   import Chart from 'chart.js/auto'
-  import { forecastExampleData } from '../data/exampleData'
+  import { storage } from '../data/storage'
 
-  window.addEventListener('weather-data', (event: any) => {
-    console.log('Weather data:', event.detail)
-  })
+  const weatherData = storage.getWeatherData()
 
   window.addEventListener('daySelected', (event: any) => {
     console.log('Day selected:', event.detail.selectedIndex)
   })
 
-  let chart: Chart | null = null
+  let chart: Chart<'line', number[], unknown> | null = null
 
   function updateChart(selectedDay: number) {
     // Calculate start and end indexes for the selected day
@@ -24,50 +22,52 @@
     const endIndex = startIndex + 24
 
     // Get the data for the selected 24-hour period
-    const times = forecastExampleData.weatherData.weatherData.timelines.hourly
+    const times = weatherData?.weatherData.weatherData.timelines.hourly
       .slice(startIndex, endIndex)
       .map(hour => hour.time)
 
     const formattedTimes = times
-      .filter(
+      ?.filter(
         (_, index, array) =>
           index === 0 || index % 2 === 0 || index === array.length - 1,
       )
       .map(time => time.split('T')[1].slice(0, 5))
 
-    const temperatures =
-      forecastExampleData.weatherData.weatherData.timelines.hourly
-        .slice(startIndex, endIndex)
-        .filter(
-          (_, index, array) =>
-            index === 0 || index % 2 === 0 || index === array.length - 1,
-        )
-        .map(hour => Number(hour.values.temperature.toFixed(0)))
-        .map(hour => {
-          if (hour === -0) return 0
-          return hour
-        })
+    const temperatures = weatherData?.weatherData.weatherData.timelines.hourly
+      .slice(startIndex, endIndex)
+      .filter(
+        (_, index, array) =>
+          index === 0 || index % 2 === 0 || index === array.length - 1,
+      )
+      .map(hour => Number(hour.values.temperature.toFixed(0)))
+      .map(hour => {
+        if (hour === -0) return 0
+        return hour
+      })
 
     // If chart exists, destroy it before creating a new one
     if (chart) chart.destroy()
 
     const ctx = document.getElementById('temperatureChart') as HTMLCanvasElement
     chart = new Chart(ctx, {
-      type: 'line' as const,
-      data: {
-        labels: formattedTimes,
-        datasets: [
-          {
-            data: temperatures,
-            fill: true,
-            borderColor: 'rgba(255, 255, 255, 0.8)',
-            backgroundColor: 'rgba(255, 255, 255, 0.1)',
-            tension: 0.4,
-            pointRadius: 4,
-            pointBackgroundColor: 'rgba(255, 255, 255, 0.8)',
-          },
-        ],
-      },
+      type: 'line',
+      data:
+        temperatures && formattedTimes
+          ? {
+              labels: formattedTimes,
+              datasets: [
+                {
+                  data: temperatures,
+                  fill: true,
+                  borderColor: 'rgba(255, 255, 255, 0.8)',
+                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                  tension: 0.4,
+                  pointRadius: 4,
+                  pointBackgroundColor: 'rgba(255, 255, 255, 0.8)',
+                },
+              ],
+            }
+          : { labels: [], datasets: [] },
       options: {
         responsive: true,
         maintainAspectRatio: false,
@@ -75,8 +75,8 @@
         scales: {
           y: {
             display: false,
-            suggestedMin: Math.min(...temperatures) - 2,
-            suggestedMax: Math.max(...temperatures) + 2,
+            suggestedMin: temperatures ? Math.min(...temperatures) - 2 : 0,
+            suggestedMax: temperatures ? Math.max(...temperatures) + 2 : 0,
           },
           x: {
             grid: { color: 'rgba(255, 255, 255, 0.1)' },

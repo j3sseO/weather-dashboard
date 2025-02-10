@@ -39,7 +39,9 @@
 </style>
 
 <script>
-  import { forecastExampleData } from '../data/exampleData'
+  import { storage } from '../data/storage'
+
+  const weatherData = storage.getWeatherData()
 
   const degreesToCardinal = (degrees: number): string => {
     const directions = [
@@ -93,19 +95,19 @@
 
   // Initial setup
   updateWindDisplay(
-    forecastExampleData.weatherData.weatherData.timelines.daily[0].values
+    weatherData?.weatherData.weatherData.timelines.daily[0].values
       .windDirectionAvg ?? 0,
-    forecastExampleData.weatherData.weatherData.timelines.daily[0].values
+    weatherData?.weatherData.weatherData.timelines.daily[0].values
       .windSpeedAvg ?? 0,
   )
 
   // Update on day selection
   window.addEventListener('daySelected', (event: any) => {
     updateWindDisplay(
-      forecastExampleData.weatherData.weatherData.timelines.daily[
+      weatherData?.weatherData.weatherData.timelines.daily[
         event.detail.selectedIndex
       ].values.windDirectionAvg ?? 0,
-      forecastExampleData.weatherData.weatherData.timelines.daily[
+      weatherData?.weatherData.weatherData.timelines.daily[
         event.detail.selectedIndex
       ].values.windSpeedAvg ?? 0,
     )

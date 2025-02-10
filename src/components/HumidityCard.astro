@@ -50,7 +50,9 @@
 </style>
 
 <script>
-  import { forecastExampleData } from '../data/exampleData'
+  import { storage } from '../data/storage'
+
+  const weatherData = storage.getWeatherData()
 
   const updateHumidityDisplay = (humidity: number) => {
     const normalizedHumidity = Math.min(100, Math.max(0, humidity))
@@ -71,14 +73,14 @@
 
   // Initial setup
   updateHumidityDisplay(
-    forecastExampleData.weatherData.weatherData.timelines.daily[0].values
+    weatherData?.weatherData.weatherData.timelines.daily[0].values
       .humidityAvg ?? 0,
   )
 
   // Update on day selection
   window.addEventListener('daySelected', (event: any) => {
     updateHumidityDisplay(
-      forecastExampleData.weatherData.weatherData.timelines.daily[
+      weatherData?.weatherData.weatherData.timelines.daily[
         event.detail.selectedIndex
       ].values.humidityAvg ?? 0,
     )

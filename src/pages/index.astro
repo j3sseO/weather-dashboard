@@ -1,25 +1,10 @@
 ---
 import LocationButton from '../components/LocationButton.astro'
-import { forecastExampleData } from '../data/exampleData'
-import weatherCodes from '../data/weatherCodes.json'
 import DaySelector from '../components/DaySelector.astro'
 import TemperatureGraph from '../components/TemperatureGraph.astro'
 import UVIndexCard from '../components/UVIndexCard.astro'
 import HumidityCard from '../components/HumidityCard.astro'
 import WindCard from '../components/WindCard.astro'
-
-const dailyTemperatures = Array.from({ length: 6 }, (_, dayIndex) => {
-  const startIdx = dayIndex * 24
-  return forecastExampleData.weatherData.weatherData.timelines.hourly
-    .slice(startIdx, startIdx + 24)
-    .map(hour => ({
-      temperature: hour.values.temperature,
-      time: hour.time,
-    }))
-})
-
-const initialTemperatures = dailyTemperatures[0].map(hour => hour.temperature)
-const initialTimes = dailyTemperatures[0].map(hour => hour.time)
 ---
 
 <html lang="en">
@@ -39,40 +24,17 @@ const initialTimes = dailyTemperatures[0].map(hour => hour.time)
         <LocationButton />
       </div>
       <div class="flex flex-col items-center space-y-2">
-        <h2 class="text-2xl font-bold text-white" id="weather-location">
-          {forecastExampleData.locationData.address.city_district},
-          {forecastExampleData.locationData.address.city}
-        </h2>
-        <h2 class="text-3xl font-semibold text-white" id="weather-temp">
-          {
-            forecastExampleData.weatherData.currentData.data.values.temperature.toFixed(
-              1,
-            )
-          }°C
-        </h2>
+        <h2 class="text-2xl font-bold text-white" id="weather-location"></h2>
+        <h2 class="text-3xl font-semibold text-white" id="weather-temp"></h2>
         <div class="flex flex-col items-center">
-          <p class="text-white" id="weather-description">
-            {
-              weatherCodes.weatherCode[
-                forecastExampleData.weatherData.currentData.data.values.weatherCode.toString() as keyof typeof weatherCodes.weatherCode
-              ] ?? 'Unknown'
-            }
-          </p>
-          <p class="text-gray-400" id="weather-description">
-            Feels like {
-              forecastExampleData.weatherData.currentData.data.values.temperatureApparent.toFixed(
-                1,
-              )
-            }°C
-          </p>
+          <p class="text-white" id="weather-description"></p>
+          <p class="text-gray-400" id="weather-temperature"></p>
         </div>
       </div>
       <div class="mt-8 flex w-full flex-col gap-8 px-24">
         <div class="grid grid-cols-[0.5fr_1.5fr] gap-8">
-          <DaySelector
-            dailyWeatherData={forecastExampleData.weatherData.weatherData
-              .timelines.daily}
-          />
+          <DaySelector />
+
           <TemperatureGraph />
         </div>
         <div class="grid grid-cols-[0.5fr_0.5fr_0.5fr] gap-4">
@@ -84,3 +46,34 @@ const initialTimes = dailyTemperatures[0].map(hour => hour.time)
     </div>
   </body>
 </html>
+
+<script>
+  import { storage } from '../data/storage'
+  import weatherCodes from '../data/weatherCodes.json'
+
+  const weatherData = storage.getWeatherData()
+
+  const weatherLocation = document.getElementById('weather-location')
+  const weatherTemp = document.getElementById('weather-temp')
+  const weatherDescription = document.getElementById('weather-description')
+  const weatherTemperature = document.getElementById('weather-temperature')
+
+  console.log(weatherData)
+
+  if (weatherLocation)
+    weatherLocation.textContent = `${weatherData?.locationData.address.city_district}, ${weatherData?.locationData.address.city}`
+
+  if (weatherTemp)
+    weatherTemp.textContent = `${weatherData?.weatherData.currentData.data.values.temperature.toFixed(1)}°C`
+
+  if (weatherDescription) {
+    weatherDescription.textContent = `${
+      weatherCodes.weatherCode[
+        weatherData?.weatherData.currentData.data.values.weatherCode.toString() as keyof typeof weatherCodes.weatherCode
+      ] ?? 'Unknown'
+    }`
+  }
+
+  if (weatherTemperature)
+    weatherTemperature.textContent = `Feels like ${weatherData?.weatherData.currentData.data.values.temperatureApparent.toFixed(1)}°C`
+</script>

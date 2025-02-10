@@ -17,7 +17,10 @@
 </div>
 
 <script>
-  import { forecastExampleData } from '../data/exampleData'
+  import { storage } from '../data/storage'
+
+  const weatherData = storage.getWeatherData()
+  console.log('weatherData', weatherData)
 
   /**
    * UV Index Rating Lookup
@@ -52,8 +55,7 @@
     }
 
     // Update slider dot position
-    const sliderDot = document.querySelector('.slider-dot')
-
+    const sliderDot = document.querySelector('.slider-dot') as HTMLDivElement
     if (sliderDot) {
       const normalizedValue = Math.max(0, Math.min(11, uvIndex))
       const position = (normalizedValue / 11) * 100
@@ -63,14 +65,14 @@
 
   // Initial setup
   updateUvDisplay(
-    forecastExampleData.weatherData.weatherData.timelines.daily[0].values
-      .uvIndexAvg ?? 0,
+    weatherData?.weatherData.weatherData.timelines.daily[0].values.uvIndexAvg ??
+      0,
   )
 
   // Update on day selection
   window.addEventListener('daySelected', (event: any) => {
     updateUvDisplay(
-      forecastExampleData.weatherData.weatherData.timelines.daily[
+      weatherData?.weatherData.weatherData.timelines.daily[
         event.detail.selectedIndex
       ].values.uvIndexAvg ?? 0,
     )

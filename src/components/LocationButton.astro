@@ -6,9 +6,37 @@
 </button>
 
 <script>
+  import { storage } from '../data/storage'
+
   const locationButton = document.querySelector(
     '#location-button',
   ) as HTMLButtonElement
+
+  async function updateWeatherDisplay(weatherData: any) {
+    // Show weather container
+    const weatherContainer = document.getElementById('weather-container')
+    if (weatherContainer) weatherContainer.classList.remove('hidden')
+
+    locationButton.style.display = 'none'
+  }
+
+  async function fetchWeatherData(latitude: number, longitude: number) {
+    const response = await fetch('/api/getCurrentWeather', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ lat: latitude, lon: longitude }),
+    })
+
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
+
+    const weatherData = await response.json()
+    console.log('Weather data:', weatherData)
+
+    // Store the new weather data
+    storage.setWeatherData(weatherData)
+
+    return weatherData
+  }
 
   async function getLocation() {
     if (!navigator.geolocation) {
@@ -20,6 +48,15 @@
     locationButton.textContent = 'Getting location...'
 
     try {
+      // Check for cached weather data first
+      const cachedWeatherData = storage.getWeatherData()
+      if (cachedWeatherData) {
+        console.log('Using cached weather data')
+        await updateWeatherDisplay(cachedWeatherData)
+        return
+      }
+
+      // If no cached data, get new location and weather data
       const position = await new Promise<GeolocationPosition>(
         (resolve, reject) => {
           navigator.geolocation.getCurrentPosition(resolve, reject)
@@ -29,35 +66,23 @@
       const { latitude, longitude } = position.coords
       console.log('Coordinates:', { latitude, longitude })
 
-      const response = await fetch('/api/getCurrentWeather', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ lat: latitude, lon: longitude }),
-      })
-
-      if (!response.ok)
-        throw new Error(`HTTP error! status: ${response.status}`)
-
-      const weatherData = await response.json()
-      console.log('Weather data:', weatherData)
-
-      document.dispatchEvent(
-        new CustomEvent('weather-data', {
-          detail: weatherData,
-        }),
-      )
-
-      // Show weather container
-      const weatherContainer = document.getElementById('weather-container')
-      if (weatherContainer) weatherContainer.classList.remove('hidden')
-
-      locationButton.style.display = 'none'
+      const weatherData = await fetchWeatherData(latitude, longitude)
+      await updateWeatherDisplay(weatherData)
     } catch (error) {
       console.error('Error:', error)
+      storage.clearWeatherData() // Clear potentially corrupt data
       locationButton.disabled = false
       locationButton.textContent = 'Get location'
     }
   }
+
+  // Check for cached data on page load
+  window.addEventListener('DOMContentLoaded', async () => {
+    const cachedWeatherData = storage.getWeatherData()
+    if (cachedWeatherData) {
+      await updateWeatherDisplay(cachedWeatherData)
+    }
+  })
 
   locationButton?.addEventListener('click', getLocation)
 </script>
