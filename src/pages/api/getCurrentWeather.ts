@@ -50,7 +50,7 @@ export const getWeatherData = async (lat: number, lon: number) => {
 export const getLocationDetails = async (lat: number, lon: number) => {
   // Get location details from OpenStreetMap
   const response = await fetch(
-    `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`,
+    `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=12`,
   )
 
   if (!response.ok)

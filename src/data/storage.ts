@@ -37,10 +37,7 @@ type TimelineForecast = {
 
 type WeatherData = {
   locationData: {
-    address: {
-      city_district: string
-      city: string
-    }
+    display_name: string
   }
 
   currentData: {

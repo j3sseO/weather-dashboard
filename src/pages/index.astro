@@ -61,7 +61,8 @@ import WindCard from '../components/WindCard.astro'
   console.log(weatherData)
 
   if (weatherLocation)
-    weatherLocation.textContent = `${weatherData?.locationData.address.city_district}, ${weatherData?.locationData.address.city}`
+    weatherLocation.textContent =
+      weatherData?.locationData.display_name ?? 'Unknown location'
 
   if (weatherTemp)
     weatherTemp.textContent = `${weatherData?.weatherData.currentData.data.values.temperature.toFixed(1)}°C`
