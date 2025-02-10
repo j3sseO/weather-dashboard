@@ -37,8 +37,9 @@
       .map(
         (day, index) => `<button
           data-index=${index}
-          class="day-button flex items-center justify-between rounded p-2 transition-colors hover:bg-white/10"
-          class:list={[{ 'bg-white/5': index === 0 }]}
+          class="day-button flex items-center justify-between rounded p-2 transition-colors hover:bg-white/10 ${
+            day === days[currentDayIndex] ? 'bg-white/5' : ''
+          }"
         >
           <span class="text-lg">${day}</span>
           <div class="ml-32 flex items-center gap-4">
@@ -46,14 +47,13 @@
               ${averageTemp?.[index]?.toFixed(0) ?? ''}°C
             </span>
           </div>
-
         </button>`,
       )
       .join('')
   }
 
   const buttons = document.querySelectorAll('.day-button')
-  let selectedIndex = 0
+  let selectedIndex = weekDays.findIndex(day => day === days[currentDayIndex])
 
   buttons.forEach(button => {
     button.addEventListener('click', () => {
