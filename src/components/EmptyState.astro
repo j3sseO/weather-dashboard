@@ -1,14 +1,9 @@
----
-// EmptyDashboard.astro
----
-
 <div
   class="flex min-h-screen flex-col items-center justify-center space-y-8 bg-gray-50 p-6"
 >
   <div class="space-y-4 text-center">
     <div class="flex justify-center">
       <div class="relative">
-        <!-- Location Pin Icon -->
         <svg
           xmlns="http://www.w3.org/2000/svg"
           class="h-16 w-16 text-gray-400"
@@ -66,7 +61,6 @@
     </p>
   </div>
 
-  <!-- Optional: Loading state for when permission is granted -->
   <div id="loadingState" class="hidden space-y-4 text-center">
     <div
       class="mx-auto h-10 w-10 animate-spin rounded-full border-b-2 border-blue-600"
@@ -119,10 +113,6 @@
     }
 
     try {
-      // Check for cached weather data first
-      const cachedWeatherData = storage.getWeatherData()
-
-      // If no cached data, get new location and weather data
       const position = await new Promise<GeolocationPosition>(
         (resolve, reject) => {
           navigator.geolocation.getCurrentPosition(resolve, reject)
