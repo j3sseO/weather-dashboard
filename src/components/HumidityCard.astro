@@ -52,37 +52,45 @@
 <script>
   import { storage } from '../data/storage'
 
-  const weatherData = storage.getWeatherData()
+  const updateUIState = () => {
+    const weatherData = storage.getWeatherData()
 
-  const updateHumidityDisplay = (humidity: number) => {
-    const normalizedHumidity = Math.min(100, Math.max(0, humidity))
+    const updateHumidityDisplay = (humidity: number) => {
+      const normalizedHumidity = Math.min(100, Math.max(0, humidity))
 
-    const progressCircle = document.querySelector(
-      '.progress-circle',
-    ) as SVGCircleElement
-    if (progressCircle) {
-      const circumference = 2 * Math.PI * 45 // 2πr where r=45
-      const offset = circumference * (1 - normalizedHumidity / 100)
-      progressCircle.style.strokeDashoffset = offset.toString()
+      const progressCircle = document.querySelector(
+        '.progress-circle',
+      ) as SVGCircleElement
+      if (progressCircle) {
+        const circumference = 2 * Math.PI * 45 // 2πr where r=45
+        const offset = circumference * (1 - normalizedHumidity / 100)
+        progressCircle.style.strokeDashoffset = offset.toString()
+      }
+
+      const humidityText = document.querySelector('.humidity-text')
+      if (humidityText)
+        humidityText.textContent = `${Math.round(normalizedHumidity)}%`
     }
 
-    const humidityText = document.querySelector('.humidity-text')
-    if (humidityText)
-      humidityText.textContent = `${Math.round(normalizedHumidity)}%`
+    // Initial setup
+    updateHumidityDisplay(
+      weatherData?.weatherData.weatherData.timelines.daily[0].values
+        .humidityAvg ?? 0,
+    )
+
+    // Update on day selection
+    window.addEventListener('daySelected', (event: any) => {
+      updateHumidityDisplay(
+        weatherData?.weatherData.weatherData.timelines.daily[
+          event.detail.selectedIndex
+        ].values.humidityAvg ?? 0,
+      )
+    })
   }
 
-  // Initial setup
-  updateHumidityDisplay(
-    weatherData?.weatherData.weatherData.timelines.daily[0].values
-      .humidityAvg ?? 0,
-  )
+  // Initial update
+  updateUIState()
 
-  // Update on day selection
-  window.addEventListener('daySelected', (event: any) => {
-    updateHumidityDisplay(
-      weatherData?.weatherData.weatherData.timelines.daily[
-        event.detail.selectedIndex
-      ].values.humidityAvg ?? 0,
-    )
-  })
+  // Listen for weather data updates
+  document.addEventListener('weatherDataUpdated', updateUIState)
 </script>

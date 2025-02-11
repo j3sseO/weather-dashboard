@@ -1,0 +1,156 @@
+---
+// EmptyDashboard.astro
+---
+
+<div
+  class="flex min-h-screen flex-col items-center justify-center space-y-8 bg-gray-50 p-6"
+>
+  <div class="space-y-4 text-center">
+    <div class="flex justify-center">
+      <div class="relative">
+        <!-- Location Pin Icon -->
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-16 w-16 text-gray-400"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+          ></path>
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+        </svg>
+      </div>
+    </div>
+    <h2 class="text-2xl font-semibold text-gray-700">
+      Welcome to Weather Dashboard
+    </h2>
+    <p class="mx-auto max-w-md text-gray-500">
+      To show you local weather conditions, we need access to your location
+    </p>
+  </div>
+
+  <div class="w-full max-w-md">
+    <button
+      id="getLocationBtn"
+      class="flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-3 text-white transition-colors hover:bg-blue-700"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        class="h-5 w-5"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+        ></path>
+      </svg>
+      Get my location
+    </button>
+
+    <p class="mt-4 text-center text-sm text-gray-500">
+      Your browser will ask for permission to access your location. This
+      information is only used to show you relevant weather data.
+    </p>
+  </div>
+
+  <!-- Optional: Loading state for when permission is granted -->
+  <div id="loadingState" class="hidden space-y-4 text-center">
+    <div
+      class="mx-auto h-10 w-10 animate-spin rounded-full border-b-2 border-blue-600"
+    >
+    </div>
+    <p class="text-gray-600">Fetching weather data...</p>
+  </div>
+</div>
+
+<script>
+  import { storage } from '../data/storage'
+
+  // Handle loading state visibility
+  const button = document.getElementById('getLocationBtn') as HTMLButtonElement
+  const loadingState = document.getElementById('loadingState')
+
+  if (button) {
+    button.addEventListener('click', () => {
+      button.classList.add('opacity-50', 'cursor-not-allowed')
+      button.disabled = true
+      if (loadingState) loadingState.classList.remove('hidden')
+
+      getLocation()
+    })
+  }
+
+  async function fetchWeatherData(latitude: number, longitude: number) {
+    const response = await fetch('/api/getCurrentWeather', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ lat: latitude, lon: longitude }),
+    })
+
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
+
+    const weatherData = await response.json()
+    console.log('Weather data:', weatherData)
+
+    // Store the new weather data
+    storage.setWeatherData(weatherData)
+    document.dispatchEvent(new Event('weatherDataUpdated'))
+
+    return weatherData
+  }
+
+  async function getLocation() {
+    if (!navigator.geolocation) {
+      console.error('Geolocation is not supported by this browser.')
+      return
+    }
+
+    try {
+      // Check for cached weather data first
+      const cachedWeatherData = storage.getWeatherData()
+
+      // If no cached data, get new location and weather data
+      const position = await new Promise<GeolocationPosition>(
+        (resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(resolve, reject)
+        },
+      )
+
+      const { latitude, longitude } = position.coords
+      console.log('Coordinates:', { latitude, longitude })
+
+      await fetchWeatherData(latitude, longitude)
+    } catch (error) {
+      console.error('Error:', error)
+      storage.clearWeatherData() // Clear potentially corrupt data
+    }
+  }
+</script>
+
+<style>
+  .animate-spin {
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+</style>

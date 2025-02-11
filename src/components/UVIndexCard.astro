@@ -19,9 +19,6 @@
 <script>
   import { storage } from '../data/storage'
 
-  const weatherData = storage.getWeatherData()
-  console.log('weatherData', weatherData)
-
   /**
    * UV Index Rating Lookup
    * https://www.tomorrow.io/weather-api/data-layers/uv-index/
@@ -34,47 +31,57 @@
     '11': 'Extreme',
   }
 
-  const updateUvDisplay = (uvIndex: number) => {
-    // Update text display
-    const uvIndexElement = document.querySelector('.uvIndex')
-    if (uvIndexElement) uvIndexElement.textContent = uvIndex.toString()
+  const updateUIState = () => {
+    const weatherData = storage.getWeatherData()
 
-    const uvIndexRatingElement = document.querySelector('.uvIndexRating')
-    if (uvIndexRatingElement) {
-      const rating =
-        uvIndex <= 2
-          ? '0,1,2'
-          : uvIndex <= 5
-            ? '3,4,5'
-            : uvIndex <= 7
-              ? '6,7'
-              : uvIndex <= 10
-                ? '8,9,10'
-                : ('11' as const)
-      uvIndexRatingElement.textContent = uvIndexRatingLookup[rating]
+    const updateUvDisplay = (uvIndex: number) => {
+      // Update text display
+      const uvIndexElement = document.querySelector('.uvIndex')
+      if (uvIndexElement) uvIndexElement.textContent = uvIndex.toString()
+
+      const uvIndexRatingElement = document.querySelector('.uvIndexRating')
+      if (uvIndexRatingElement) {
+        const rating =
+          uvIndex <= 2
+            ? '0,1,2'
+            : uvIndex <= 5
+              ? '3,4,5'
+              : uvIndex <= 7
+                ? '6,7'
+                : uvIndex <= 10
+                  ? '8,9,10'
+                  : ('11' as const)
+        uvIndexRatingElement.textContent = uvIndexRatingLookup[rating]
+      }
+
+      // Update slider dot position
+      const sliderDot = document.querySelector('.slider-dot') as HTMLDivElement
+      if (sliderDot) {
+        const normalizedValue = Math.max(0, Math.min(11, uvIndex))
+        const position = (normalizedValue / 11) * 100
+        sliderDot.style.left = `${position}%`
+      }
     }
 
-    // Update slider dot position
-    const sliderDot = document.querySelector('.slider-dot') as HTMLDivElement
-    if (sliderDot) {
-      const normalizedValue = Math.max(0, Math.min(11, uvIndex))
-      const position = (normalizedValue / 11) * 100
-      sliderDot.style.left = `${position}%`
-    }
+    // Initial setup
+    updateUvDisplay(
+      weatherData?.weatherData.weatherData.timelines.daily[0].values
+        .uvIndexAvg ?? 0,
+    )
+
+    // Update on day selection
+    window.addEventListener('daySelected', (event: any) => {
+      updateUvDisplay(
+        weatherData?.weatherData.weatherData.timelines.daily[
+          event.detail.selectedIndex
+        ].values.uvIndexAvg ?? 0,
+      )
+    })
   }
 
-  // Initial setup
-  updateUvDisplay(
-    weatherData?.weatherData.weatherData.timelines.daily[0].values.uvIndexAvg ??
-      0,
-  )
+  // Initial update
+  updateUIState()
 
-  // Update on day selection
-  window.addEventListener('daySelected', (event: any) => {
-    updateUvDisplay(
-      weatherData?.weatherData.weatherData.timelines.daily[
-        event.detail.selectedIndex
-      ].values.uvIndexAvg ?? 0,
-    )
-  })
+  // Listen for weather data updates
+  document.addEventListener('weatherDataUpdated', updateUIState)
 </script>

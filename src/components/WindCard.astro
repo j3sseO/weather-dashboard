@@ -41,8 +41,6 @@
 <script>
   import { storage } from '../data/storage'
 
-  const weatherData = storage.getWeatherData()
-
   const degreesToCardinal = (degrees: number): string => {
     const directions = [
       'N',
@@ -66,50 +64,61 @@
     return directions[index]
   }
 
-  const updateWindDisplay = (windDirection: number, windSpeed: number) => {
-    // Normalize wind direction to be between 0 and 360
-    windDirection = ((windDirection % 360) + 360) % 360
+  const updateUIState = () => {
+    const weatherData = storage.getWeatherData()
 
-    // Update direction text and cardinal direction
-    const directionElement = document.querySelector('.wind-direction')
-    const cardinalElement = document.querySelector('.wind-cardinal')
-    if (directionElement)
-      directionElement.textContent = `${Math.round(windDirection)}°`
-    if (cardinalElement)
-      cardinalElement.textContent = degreesToCardinal(windDirection)
+    const updateWindDisplay = (windDirection: number, windSpeed: number) => {
+      // Normalize wind direction to be between 0 and 360
+      windDirection = ((windDirection % 360) + 360) % 360
 
-    // Update speed
-    const speedElement = document.querySelector('.wind-speed')
-    if (speedElement) speedElement.textContent = `${Math.round(windSpeed)} kmh`
+      // Update direction text and cardinal direction
+      const directionElement = document.querySelector('.wind-direction')
+      const cardinalElement = document.querySelector('.wind-cardinal')
+      if (directionElement)
+        directionElement.textContent = `${Math.round(windDirection)}°`
+      if (cardinalElement)
+        cardinalElement.textContent = degreesToCardinal(windDirection)
 
-    // Update progress circle
-    const progressCircle = document.querySelector(
-      '.wind-progress',
-    ) as SVGCircleElement
-    if (progressCircle) {
-      const circumference = 282.7433388230814 // Exactly 2 * π * 45
-      const offset = circumference - (windDirection / 360) * circumference
-      progressCircle.style.strokeDashoffset = offset.toString()
+      // Update speed
+      const speedElement = document.querySelector('.wind-speed')
+      if (speedElement)
+        speedElement.textContent = `${Math.round(windSpeed)} kmh`
+
+      // Update progress circle
+      const progressCircle = document.querySelector(
+        '.wind-progress',
+      ) as SVGCircleElement
+      if (progressCircle) {
+        const circumference = 282.7433388230814 // Exactly 2 * π * 45
+        const offset = circumference - (windDirection / 360) * circumference
+        progressCircle.style.strokeDashoffset = offset.toString()
+      }
     }
+
+    // Initial setup
+    updateWindDisplay(
+      weatherData?.weatherData.weatherData.timelines.daily[0].values
+        .windDirectionAvg ?? 0,
+      weatherData?.weatherData.weatherData.timelines.daily[0].values
+        .windSpeedAvg ?? 0,
+    )
+
+    // Update on day selection
+    window.addEventListener('daySelected', (event: any) => {
+      updateWindDisplay(
+        weatherData?.weatherData.weatherData.timelines.daily[
+          event.detail.selectedIndex
+        ].values.windDirectionAvg ?? 0,
+        weatherData?.weatherData.weatherData.timelines.daily[
+          event.detail.selectedIndex
+        ].values.windSpeedAvg ?? 0,
+      )
+    })
   }
 
-  // Initial setup
-  updateWindDisplay(
-    weatherData?.weatherData.weatherData.timelines.daily[0].values
-      .windDirectionAvg ?? 0,
-    weatherData?.weatherData.weatherData.timelines.daily[0].values
-      .windSpeedAvg ?? 0,
-  )
+  // Initial update
+  updateUIState()
 
-  // Update on day selection
-  window.addEventListener('daySelected', (event: any) => {
-    updateWindDisplay(
-      weatherData?.weatherData.weatherData.timelines.daily[
-        event.detail.selectedIndex
-      ].values.windDirectionAvg ?? 0,
-      weatherData?.weatherData.weatherData.timelines.daily[
-        event.detail.selectedIndex
-      ].values.windSpeedAvg ?? 0,
-    )
-  })
+  // Listen for weather data updates
+  document.addEventListener('weatherDataUpdated', updateUIState)
 </script>

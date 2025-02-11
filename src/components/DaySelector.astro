@@ -25,17 +25,19 @@
     return days[dayIndex]
   })
 
-  const weatherData = storage.getWeatherData()
+  function updateUIState() {
+    const weatherData = storage.getWeatherData()
 
-  const averageTemp = weatherData?.weatherData.weatherData.timelines.daily.map(
-    day => day.values.temperatureAvg,
-  )
+    const averageTemp =
+      weatherData?.weatherData.weatherData.timelines.daily.map(
+        day => day.values.temperatureAvg,
+      )
 
-  const daySelector = document.getElementById('day-selector')
-  if (daySelector) {
-    daySelector.innerHTML = weekDays
-      .map(
-        (day, index) => `<button
+    const daySelector = document.getElementById('day-selector')
+    if (daySelector) {
+      daySelector.innerHTML = weekDays
+        .map(
+          (day, index) => `<button
           data-index=${index}
           class="day-button flex items-center justify-between rounded p-2 transition-colors hover:bg-white/10 ${
             day === days[currentDayIndex] ? 'bg-white/5' : ''
@@ -48,24 +50,31 @@
             </span>
           </div>
         </button>`,
-      )
-      .join('')
+        )
+        .join('')
+    }
+
+    const buttons = document.querySelectorAll('.day-button')
+    let selectedIndex = weekDays.findIndex(day => day === days[currentDayIndex])
+
+    buttons.forEach(button => {
+      button.addEventListener('click', () => {
+        buttons.forEach(btn => btn.classList.remove('bg-white/5'))
+
+        button.classList.add('bg-white/5')
+
+        selectedIndex = parseInt(button.getAttribute('data-index') || '0')
+
+        window.dispatchEvent(
+          new CustomEvent('daySelected', { detail: { selectedIndex } }),
+        )
+      })
+    })
   }
 
-  const buttons = document.querySelectorAll('.day-button')
-  let selectedIndex = weekDays.findIndex(day => day === days[currentDayIndex])
+  // Initial update
+  updateUIState()
 
-  buttons.forEach(button => {
-    button.addEventListener('click', () => {
-      buttons.forEach(btn => btn.classList.remove('bg-white/5'))
-
-      button.classList.add('bg-white/5')
-
-      selectedIndex = parseInt(button.getAttribute('data-index') || '0')
-
-      window.dispatchEvent(
-        new CustomEvent('daySelected', { detail: { selectedIndex } }),
-      )
-    })
-  })
+  // Listen for weather data updates
+  document.addEventListener('weatherDataUpdated', updateUIState)
 </script>

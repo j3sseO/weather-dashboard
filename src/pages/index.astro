@@ -1,10 +1,10 @@
 ---
-import LocationButton from '../components/LocationButton.astro'
 import DaySelector from '../components/DaySelector.astro'
 import TemperatureGraph from '../components/TemperatureGraph.astro'
 import UVIndexCard from '../components/UVIndexCard.astro'
 import HumidityCard from '../components/HumidityCard.astro'
 import WindCard from '../components/WindCard.astro'
+import EmptyState from '../components/EmptyState.astro'
 ---
 
 <html lang="en">
@@ -14,15 +14,28 @@ import WindCard from '../components/WindCard.astro'
     <meta name="viewport" content="width=device-width" />
     <meta name="generator" content={Astro.generator} />
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4" defer></script>
-    <title>Astro</title>
+    <title>Weather Dashboard</title>
+    <style>
+      #empty-state,
+      #weather-dashboard {
+        opacity: 0;
+        transition: opacity 0.2s;
+      }
+
+      #empty-state.visible,
+      #weather-dashboard.visible {
+        opacity: 1;
+      }
+    </style>
   </head>
   <body>
+    <div id="empty-state" class="opacity-0 transition-opacity duration-200">
+      <EmptyState />
+    </div>
     <div
-      class="flex h-screen flex-col items-center bg-gradient-to-b from-slate-800 to-slate-900 p-4"
+      class="flex h-screen flex-col items-center bg-gradient-to-b from-slate-800 to-slate-900 p-4 opacity-0 transition-opacity duration-200"
+      id="weather-dashboard"
     >
-      <div class="w-full">
-        <LocationButton />
-      </div>
       <div class="mt-8 flex flex-col items-center space-y-2">
         <h2 class="text-2xl font-bold text-white" id="weather-location"></h2>
         <h2 class="text-3xl font-semibold text-white" id="weather-temp"></h2>
@@ -50,28 +63,52 @@ import WindCard from '../components/WindCard.astro'
   import { storage } from '../data/storage'
   import weatherCodes from '../data/weatherCodes.json'
 
-  const weatherData = storage.getWeatherData()
+  const weatherDashboard = document.getElementById('weather-dashboard')
+  const emptyState = document.getElementById('empty-state')
 
   const weatherLocation = document.getElementById('weather-location')
   const weatherTemp = document.getElementById('weather-temp')
   const weatherDescription = document.getElementById('weather-description')
   const weatherTemperature = document.getElementById('weather-temperature')
 
-  if (weatherLocation)
-    weatherLocation.textContent =
-      weatherData?.locationData.display_name ?? 'Unknown location'
+  function updateUIState() {
+    const weatherData = storage.getWeatherData()
 
-  if (weatherTemp)
-    weatherTemp.textContent = `${weatherData?.weatherData.currentData.data.values.temperature.toFixed(1)}°C`
+    if (weatherData) {
+      weatherDashboard?.classList.remove('hidden')
+      weatherDashboard?.classList.add('visible')
+      emptyState?.classList.add('hidden')
+      emptyState?.classList.remove('visible')
 
-  if (weatherDescription) {
-    weatherDescription.textContent = `${
-      weatherCodes.weatherCode[
-        weatherData?.weatherData.currentData.data.values.weatherCode.toString() as keyof typeof weatherCodes.weatherCode
-      ] ?? 'Unknown'
-    }`
+      // Update weather information
+      if (weatherLocation)
+        weatherLocation.textContent =
+          weatherData.locationData.display_name ?? 'Unknown location'
+
+      if (weatherTemp)
+        weatherTemp.textContent = `${weatherData.weatherData.currentData.data.values.temperature.toFixed(1)}°C`
+
+      if (weatherDescription) {
+        weatherDescription.textContent = `${
+          weatherCodes.weatherCode[
+            weatherData.weatherData.currentData.data.values.weatherCode.toString() as keyof typeof weatherCodes.weatherCode
+          ] ?? 'Unknown'
+        }`
+      }
+
+      if (weatherTemperature)
+        weatherTemperature.textContent = `Feels like ${weatherData.weatherData.currentData.data.values.temperatureApparent.toFixed(1)}°C`
+    } else {
+      weatherDashboard?.classList.add('hidden')
+      weatherDashboard?.classList.remove('visible')
+      emptyState?.classList.remove('hidden')
+      emptyState?.classList.add('visible')
+    }
   }
 
-  if (weatherTemperature)
-    weatherTemperature.textContent = `Feels like ${weatherData?.weatherData.currentData.data.values.temperatureApparent.toFixed(1)}°C`
+  // Initial update
+  updateUIState()
+
+  // Listen for weather data updates
+  document.addEventListener('weatherDataUpdated', updateUIState)
 </script>
