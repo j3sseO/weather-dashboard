@@ -1,12 +1,12 @@
 <div
-  class="flex min-h-screen flex-col items-center justify-center space-y-8 bg-gray-50 p-6"
+  class="flex min-h-screen flex-col items-center justify-center space-y-8 bg-opacity-0 p-6"
 >
   <div class="space-y-4 text-center">
     <div class="flex justify-center">
       <div class="relative">
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          class="h-16 w-16 text-gray-400"
+          class="h-16 w-16 text-gray-100"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -25,10 +25,10 @@
         </svg>
       </div>
     </div>
-    <h2 class="text-2xl font-semibold text-gray-700">
-      Welcome to Weather Dashboard
+    <h2 class="text-2xl font-semibold text-gray-300">
+      Welcome to the Weather Dashboard
     </h2>
-    <p class="mx-auto max-w-md text-gray-500">
+    <p class="mx-auto max-w-md text-gray-100">
       To show you local weather conditions, we need access to your location
     </p>
   </div>
@@ -55,7 +55,7 @@
       Get my location
     </button>
 
-    <p class="mt-4 text-center text-sm text-gray-500">
+    <p class="mt-4 text-center text-sm text-gray-100">
       Your browser will ask for permission to access your location. This
       information is only used to show you relevant weather data.
     </p>
@@ -63,10 +63,10 @@
 
   <div id="loadingState" class="hidden space-y-4 text-center">
     <div
-      class="mx-auto h-10 w-10 animate-spin rounded-full border-b-2 border-blue-600"
+      class="mx-auto h-10 w-10 animate-spin rounded-full border-b-2 border-blue-200"
     >
     </div>
-    <p class="text-gray-600">Fetching weather data...</p>
+    <p class="text-gray-400">Fetching weather data...</p>
   </div>
 </div>
 
