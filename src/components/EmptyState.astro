@@ -77,13 +77,41 @@
   const button = document.getElementById('getLocationBtn') as HTMLButtonElement
   const loadingState = document.getElementById('loadingState')
 
+  function resetLoadingState() {
+    if (button) {
+      button.classList.remove('opacity-50', 'cursor-not-allowed')
+      button.disabled = false
+    }
+    if (loadingState) loadingState.classList.add('hidden')
+  }
+
+  function showError(message: string) {
+    // Create error notification
+    const errorDiv = document.createElement('div')
+    errorDiv.className =
+      'fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg'
+    errorDiv.textContent = message
+    document.body.appendChild(errorDiv)
+
+    // Remove after 5 seconds
+    setTimeout(() => errorDiv.remove(), 5000)
+  }
+
   if (button) {
     button.addEventListener('click', () => {
       button.classList.add('opacity-50', 'cursor-not-allowed')
       button.disabled = true
       if (loadingState) loadingState.classList.remove('hidden')
 
-      getLocation()
+      // Set timeout for location request
+      const timeoutId = setTimeout(() => {
+        resetLoadingState()
+        showError('Location request timed out. Please try again.')
+      }, 10000) // 10 second timeout
+
+      getLocation().finally(() => {
+        clearTimeout(timeoutId)
+      })
     })
   }
 
@@ -108,14 +136,27 @@
 
   async function getLocation() {
     if (!navigator.geolocation) {
-      console.error('Geolocation is not supported by this browser.')
+      resetLoadingState()
+      showError('Geolocation is not supported by this browser.')
       return
     }
 
     try {
       const position = await new Promise<GeolocationPosition>(
         (resolve, reject) => {
-          navigator.geolocation.getCurrentPosition(resolve, reject)
+          navigator.permissions.query({ name: 'geolocation' }).then(result => {
+            if (result.state === 'denied') {
+              // Force permissions prompt by clearing site settings
+              const msg =
+                'Location access was denied. Please enable location access in your browser settings and try again.'
+              showError(msg)
+              resetLoadingState()
+              reject(new Error(msg))
+              return
+            }
+
+            navigator.geolocation.getCurrentPosition(resolve, reject)
+          })
         },
       )
 
@@ -126,6 +167,29 @@
     } catch (error) {
       console.error('Error:', error)
       storage.clearWeatherData() // Clear potentially corrupt data
+
+      // Handle specific geolocation errors
+      if (error instanceof GeolocationPositionError) {
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            showError(
+              'Location access was denied. Please enable location access in your browser settings and try again.',
+            )
+            break
+          case error.POSITION_UNAVAILABLE:
+            showError('Location information is unavailable. Please try again.')
+            break
+          case error.TIMEOUT:
+            showError('Location request timed out. Please try again.')
+            break
+          default:
+            showError(
+              'An error occurred while getting your location. Please try again.',
+            )
+        }
+      }
+
+      resetLoadingState()
     }
   }
 </script>
