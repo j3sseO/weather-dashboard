@@ -21,6 +21,8 @@ type WeatherValues = {
   temperature: number
   temperatureAvg: number
   temperatureApparent: number
+  temperatureMin: number
+  temperatureMax: number
   uvHealthConcern: number
   uvIndexAvg: number
   visibility: number

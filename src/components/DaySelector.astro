@@ -28,10 +28,11 @@
   function updateUIState() {
     const weatherData = storage.getWeatherData()
 
-    const averageTemp =
-      weatherData?.weatherData.weatherData.timelines.daily.map(
-        day => day.values.temperatureAvg,
-      )
+    const temperatures =
+      weatherData?.weatherData.weatherData.timelines.daily.map(day => ({
+        min: day.values.temperatureMin,
+        max: day.values.temperatureMax,
+      }))
 
     const daySelector = document.getElementById('day-selector')
     if (daySelector) {
@@ -44,10 +45,23 @@
           }"
         >
           <span class="text-lg">${day}</span>
-          <div class="ml-4 md:ml-32 flex items-center gap-4">
-            <span class="text-lg">
-              ${averageTemp?.[index]?.toFixed(0) ?? ''}°C
-            </span>
+          <div class="flex items-center gap-2">
+             <div class="flex items-center gap-1">
+              <img 
+                src="src/icons/thermometer-high.svg" 
+                alt="High temperature"
+                class="w-6 h-6"
+              />
+              <span class="text-lg">${temperatures?.[index]?.max?.toFixed(0) ?? ''}°</span>
+            </div>
+            <div class="flex items-center gap-1">
+              <img 
+                src="src/icons/thermometer-low.svg" 
+                alt="Low temperature"
+                class="w-6 h-6"
+              />
+              <span class="text-lg">${temperatures?.[index]?.min?.toFixed(0) ?? ''}°</span>
+            </div>
           </div>
         </button>`,
         )
