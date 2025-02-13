@@ -6,6 +6,7 @@
 
 <script>
   import { storage } from '../data/storage'
+  import { celsiusToFahrenheit } from '../data/utilities'
 
   const today = new Date()
   const currentDayIndex = today.getDay()
@@ -27,11 +28,18 @@
 
   function updateUIState() {
     const weatherData = storage.getWeatherData()
+    const tempUnit = storage.temperatureUnit.get()
 
     const temperatures =
       weatherData?.weatherData.weatherData.timelines.daily.map(day => ({
-        min: day.values.temperatureMin,
-        max: day.values.temperatureMax,
+        min:
+          tempUnit === 'fahrenheit'
+            ? celsiusToFahrenheit(day.values.temperatureMin)
+            : day.values.temperatureMin,
+        max:
+          tempUnit === 'fahrenheit'
+            ? celsiusToFahrenheit(day.values.temperatureMax)
+            : day.values.temperatureMax,
       }))
 
     const daySelector = document.getElementById('day-selector')
@@ -91,4 +99,7 @@
 
   // Listen for weather data updates
   document.addEventListener('weatherDataUpdated', updateUIState)
+
+  // Listen for temperature unit changes
+  document.addEventListener('temperatureUnitChanged', updateUIState)
 </script>

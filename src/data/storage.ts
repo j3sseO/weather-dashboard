@@ -100,4 +100,10 @@ export const storage = {
   clearWeatherData: () => {
     localStorage.removeItem(WEATHER_DATA_KEY)
   },
+
+  temperatureUnit: {
+    get: () => localStorage.getItem('temperatureUnit') || 'celsius',
+    set: (unit: 'celsius' | 'fahrenheit') =>
+      localStorage.setItem('temperatureUnit', unit),
+  },
 }

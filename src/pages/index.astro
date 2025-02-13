@@ -36,12 +36,27 @@ import EmptyState from '../components/EmptyState.astro'
       class="flex min-h-screen flex-col items-center bg-gradient-to-b from-slate-800 to-slate-900 p-4 opacity-0 transition-opacity duration-200"
       id="weather-dashboard"
     >
+      <select
+        id="temp-unit-dropdown"
+        class="fixed left-4 top-4 cursor-pointer rounded-lg border border-white/10 bg-gray-800/50 px-3 py-2 text-white backdrop-blur-sm transition-colors hover:bg-white/10"
+      >
+        <option value="celsius" class="text-black hover:bg-white">
+          Celsius
+        </option>
+        <option value="fahrenheit" class="text-black hover:bg-white">
+          Fahrenheit
+        </option>
+      </select>
+      <!-- TODO: Add top margin when screen is smaller to avoid overlapping with the dropdown -->
       <div class="mt-8 flex flex-col items-center space-y-2">
-        <h2 class="text-2xl font-bold text-white text-center" id="weather-location"></h2>
+        <h2
+          class="text-center text-2xl font-bold text-white"
+          id="weather-location"
+        >
+        </h2>
         <h2 class="text-3xl font-semibold text-white" id="weather-temp"></h2>
         <div class="flex flex-col items-center">
           <p class="text-white" id="weather-description"></p>
-          <p class="text-gray-400" id="weather-temperature"></p>
         </div>
       </div>
       <div
@@ -64,6 +79,7 @@ import EmptyState from '../components/EmptyState.astro'
 <script>
   import { storage } from '../data/storage'
   import weatherCodes from '../data/weatherCodes.json'
+  import { celsiusToFahrenheit } from '../data/utilities'
 
   const weatherDashboard = document.getElementById('weather-dashboard')
   const emptyState = document.getElementById('empty-state')
@@ -73,8 +89,16 @@ import EmptyState from '../components/EmptyState.astro'
   const weatherDescription = document.getElementById('weather-description')
   const weatherTemperature = document.getElementById('weather-temperature')
 
+  const tempUnitDropdown = document.getElementById(
+    'temp-unit-dropdown',
+  ) as HTMLSelectElement
+
+  // Set initial value from storage
+  tempUnitDropdown.value = storage.temperatureUnit.get()
+
   function updateUIState() {
     const weatherData = storage.getWeatherData()
+    const tempUnit = storage.temperatureUnit.get()
 
     if (weatherData) {
       weatherDashboard?.classList.remove('hidden')
@@ -87,8 +111,12 @@ import EmptyState from '../components/EmptyState.astro'
         weatherLocation.textContent =
           weatherData.locationData.display_name ?? 'Unknown location'
 
-      if (weatherTemp)
-        weatherTemp.textContent = `${weatherData.weatherData.currentData.data.values.temperature.toFixed(1)}°C`
+      if (weatherTemp) {
+        const temp = weatherData.weatherData.currentData.data.values.temperature
+        const displayTemp =
+          tempUnit === 'fahrenheit' ? celsiusToFahrenheit(temp) : temp
+        weatherTemp.textContent = `${Math.round(displayTemp)}°${tempUnit === 'fahrenheit' ? 'F' : 'C'}`
+      }
 
       if (weatherDescription) {
         weatherDescription.textContent = `${
@@ -98,8 +126,13 @@ import EmptyState from '../components/EmptyState.astro'
         }`
       }
 
-      if (weatherTemperature)
-        weatherTemperature.textContent = `Feels like ${weatherData.weatherData.currentData.data.values.temperatureApparent.toFixed(1)}°C`
+      if (weatherTemperature) {
+        const feelTemp =
+          weatherData.weatherData.currentData.data.values.temperatureApparent
+        const displayFeelTemp =
+          tempUnit === 'fahrenheit' ? celsiusToFahrenheit(feelTemp) : feelTemp
+        weatherTemperature.textContent = `Feels like ${displayFeelTemp.toFixed(1)}°${tempUnit === 'fahrenheit' ? 'F' : 'C'}`
+      }
     } else {
       weatherDashboard?.classList.add('hidden')
       weatherDashboard?.classList.remove('visible')
@@ -107,6 +140,15 @@ import EmptyState from '../components/EmptyState.astro'
       emptyState?.classList.add('visible')
     }
   }
+
+  tempUnitDropdown.addEventListener('change', e => {
+    const unit = (e.target as HTMLSelectElement).value as
+      | 'celsius'
+      | 'fahrenheit'
+    storage.temperatureUnit.set(unit)
+    document.dispatchEvent(new CustomEvent('temperatureUnitChanged'))
+    updateUIState()
+  })
 
   // Initial update
   updateUIState()
