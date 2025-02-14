@@ -11,6 +11,11 @@
       >Precipitation</button
     >
     <button
+      id="humidityButton"
+      class="rounded-lg border border-white/10 bg-gray-800/50 px-3 py-1 text-white backdrop-blur-sm transition-colors hover:bg-white/10"
+      >Humidity</button
+    >
+    <button
       id="uvIndexButton"
       class="rounded-lg border border-white/10 bg-gray-800/50 px-3 py-1 text-white backdrop-blur-sm transition-colors hover:bg-white/10"
       >UV Index</button
@@ -43,6 +48,7 @@
   // Track which metric is active
   let isTemperatureView = true
   let isPrecipitationView = false
+  let isHumidityView = false
 
   const updateUIState = () => {
     const weatherData = storage.getWeatherData()
@@ -88,6 +94,8 @@
             return tempUnit === 'fahrenheit' ? celsiusToFahrenheit(temp) : temp
           } else if (isPrecipitationView)
             return Number(hour.values.precipitationProbability.toFixed(0))
+          else if (isHumidityView)
+            return Number(hour.values.humidity.toFixed(0))
           else return Number(hour.values.uvIndex.toFixed(1))
         })
         .map(value => {
@@ -136,7 +144,7 @@
               },
               formatter: function (value: number) {
                 if (isTemperatureView) return value + '°'
-                if (isPrecipitationView) return value + '%'
+                if (isPrecipitationView || isHumidityView) return value + '%'
                 return value
               },
             },
@@ -145,11 +153,19 @@
             y: {
               display: false,
               suggestedMin: values
-                ? Math.min(...values) - (isTemperatureView ? 2 : 0)
+                ? isHumidityView
+                  ? 0
+                  : Math.min(...values) - (isTemperatureView ? 2 : 0)
                 : 0,
               suggestedMax: values
                 ? Math.max(...values) +
-                  (isTemperatureView ? 10 : isPrecipitationView ? 110 : 6)
+                  (isTemperatureView
+                    ? 10
+                    : isPrecipitationView
+                      ? 110
+                      : isHumidityView
+                        ? 30
+                        : 6)
                 : 0,
             },
             x: {
@@ -195,25 +211,53 @@
   const temperatureButton = document.getElementById('temperatureButton')
   const uvIndexButton = document.getElementById('uvIndexButton')
   const precipitationButton = document.getElementById('precipitationButton')
+  const humidityButton = document.getElementById('humidityButton')
 
   temperatureButton?.addEventListener('click', () => {
-    isTemperatureView = true
     isPrecipitationView = false
-    setActiveButton([temperatureButton], [uvIndexButton!, precipitationButton!])
+    isHumidityView = false
+    isTemperatureView = true
+
+    setActiveButton(
+      [temperatureButton],
+      [uvIndexButton!, precipitationButton!, humidityButton!],
+    )
     updateUIState()
   })
 
   uvIndexButton?.addEventListener('click', () => {
     isTemperatureView = false
     isPrecipitationView = false
-    setActiveButton([uvIndexButton], [temperatureButton!, precipitationButton!])
+    isHumidityView = false
+
+    setActiveButton(
+      [uvIndexButton],
+      [temperatureButton!, precipitationButton!, humidityButton!],
+    )
     updateUIState()
   })
 
   precipitationButton?.addEventListener('click', () => {
     isTemperatureView = false
+    isHumidityView = false
     isPrecipitationView = true
-    setActiveButton([precipitationButton], [temperatureButton!, uvIndexButton!])
+
+    setActiveButton(
+      [precipitationButton],
+      [temperatureButton!, uvIndexButton!, humidityButton!],
+    )
+    updateUIState()
+  })
+
+  humidityButton?.addEventListener('click', () => {
+    isTemperatureView = false
+    isPrecipitationView = false
+    isHumidityView = true
+
+    setActiveButton(
+      [humidityButton],
+      [temperatureButton!, uvIndexButton!, precipitationButton!],
+    )
     updateUIState()
   })
 </script>
