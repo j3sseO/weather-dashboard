@@ -1,0 +1,265 @@
+<div class="relative">
+  <div
+    class="flex h-[300px] w-full items-center justify-center rounded-lg bg-gray-800/50"
+  >
+    <canvas id="temperatureChart" class="p-6"></canvas>
+  </div>
+  <div
+    class="absolute -bottom-12 right-1.5 flex flex-row items-center gap-2 sm:right-0"
+  >
+    <button
+      id="temperatureButton"
+      class="-mt-10 rounded-lg border border-white/10 bg-gray-800/50 bg-white/10 px-3 py-1 text-xs text-white backdrop-blur-sm transition-colors hover:bg-white/20 sm:mt-0 sm:text-base"
+      >Temperature</button
+    >
+    <button
+      id="precipitationButton"
+      class="-mt-10 rounded-lg border border-white/10 bg-gray-800/50 px-3 py-1 text-xs text-white backdrop-blur-sm transition-colors hover:bg-white/20 sm:mt-0 sm:text-base"
+      >Precipitation</button
+    >
+    <button
+      id="humidityButton"
+      class="-mt-10 rounded-lg border border-white/10 bg-gray-800/50 px-3 py-1 text-xs text-white backdrop-blur-sm transition-colors hover:bg-white/20 sm:mt-0 sm:text-base"
+      >Humidity</button
+    >
+    <button
+      id="uvIndexButton"
+      class="-mt-10 rounded-lg border border-white/10 bg-gray-800/50 px-3 py-1 text-xs text-white backdrop-blur-sm transition-colors hover:bg-white/20 sm:mt-0 sm:text-base"
+      >UV Index</button
+    >
+  </div>
+</div>
+
+<script>
+  declare global {
+    interface Window {
+      selectedIndex?: number
+    }
+  }
+
+  import Chart from 'chart.js/auto'
+  import ChartDataLabels from 'chartjs-plugin-datalabels'
+  import { toZonedTime } from 'date-fns-tz'
+  import { storage } from '../data/storage'
+  import { celsiusToFahrenheit, setActiveButton } from '../data/utilities'
+
+  Chart.register(ChartDataLabels)
+
+  let chart: Chart<'line', number[], unknown> | null = null
+
+  // Track which metric is active
+  let isTemperatureView = true
+  let isPrecipitationView = false
+  let isHumidityView = false
+
+  const updateUIState = () => {
+    const weatherData = storage.getWeatherData()
+
+    function updateChart(selectedDay: number) {
+      // Calculate start and end indexes for the selected day
+      const startIndex = selectedDay * 24
+      const endIndex = startIndex + 24
+
+      // Get the data for the selected 24-hour period
+      const times = weatherData?.weatherData.weatherData.timelines.hourly
+        .slice(startIndex, endIndex)
+        .map(hour => {
+          const zonedTime = toZonedTime(
+            new Date(hour.time),
+            Intl.DateTimeFormat().resolvedOptions().timeZone,
+          )
+          return zonedTime
+        })
+
+      const formattedTimes = times
+        ?.filter(
+          (_, index, array) =>
+            index === 0 || index % 2 === 0 || index === array.length - 1,
+        )
+        .map(time =>
+          time.toLocaleTimeString('en-GB', {
+            hour: '2-digit',
+            minute: '2-digit',
+          }),
+        )
+
+      const tempUnit = storage.temperatureUnit.get()
+      const values = weatherData?.weatherData.weatherData.timelines.hourly
+        .slice(startIndex, endIndex)
+        .filter(
+          (_, index, array) =>
+            index === 0 || index % 2 === 0 || index === array.length - 1,
+        )
+        .map(hour => {
+          if (isTemperatureView) {
+            const temp = Number(hour.values.temperature.toFixed(0))
+            return tempUnit === 'fahrenheit' ? celsiusToFahrenheit(temp) : temp
+          } else if (isPrecipitationView)
+            return Number(hour.values.precipitationProbability.toFixed(0))
+          else if (isHumidityView)
+            return Number(hour.values.humidity.toFixed(0))
+          else return Number(hour.values.uvIndex.toFixed(1))
+        })
+        .map(value => {
+          if (value === -0) return 0
+          return value
+        })
+
+      // If chart exists, destroy it before creating a new one
+      if (chart) chart.destroy()
+
+      const ctx = document.getElementById(
+        'temperatureChart',
+      ) as HTMLCanvasElement
+      chart = new Chart(ctx, {
+        type: 'line',
+        data:
+          values && formattedTimes
+            ? {
+                labels: formattedTimes,
+                datasets: [
+                  {
+                    data: values,
+                    fill: true,
+                    borderColor: 'rgba(255, 255, 255, 0.8)',
+                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                    tension: 0.4,
+                    pointRadius: window.innerWidth < 768 ? 2 : 4,
+                    pointBackgroundColor: 'rgba(255, 255, 255, 0.8)',
+                  },
+                ],
+              }
+            : { labels: [], datasets: [] },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: { enabled: false },
+            datalabels: {
+              align: 'top',
+              anchor: 'end',
+              offset: 4,
+              color: 'rgba(255, 255, 255, 0.8)',
+              font: {
+                size: window.innerWidth < 768 ? 10 : 12,
+              },
+              formatter: function (value: number) {
+                if (isTemperatureView) return value + '°'
+                if (isPrecipitationView || isHumidityView) return value + '%'
+                return value
+              },
+            },
+          },
+          scales: {
+            y: {
+              display: false,
+              suggestedMin: values
+                ? isHumidityView
+                  ? 0
+                  : Math.min(...values) - (isTemperatureView ? 2 : 0)
+                : 0,
+              suggestedMax: values
+                ? Math.max(...values) +
+                  (isTemperatureView
+                    ? 10
+                    : isPrecipitationView
+                      ? 110
+                      : isHumidityView
+                        ? 30
+                        : 6)
+                : 0,
+            },
+            x: {
+              grid: { color: 'rgba(255, 255, 255, 0.1)' },
+              ticks: {
+                color: 'rgba(255, 255, 255, 0.8)',
+                font: {
+                  size: window.innerWidth < 768 ? 10 : 12,
+                },
+              },
+            },
+          },
+        },
+      })
+    }
+
+    // Initialize with day 0
+    updateChart(0)
+
+    // Listen for day selection changes
+    window.addEventListener('daySelected', (event: any) => {
+      updateChart(event.detail.selectedIndex)
+    })
+
+    // Listen for window resize
+    window.addEventListener('resize', () => {
+      const event = new CustomEvent('daySelected', {
+        detail: { selectedIndex: window.selectedIndex || 0 },
+      })
+      window.dispatchEvent(event)
+    })
+  }
+
+  // Initial update
+  updateUIState()
+
+  // Listen for weather data updates
+  document.addEventListener('weatherDataUpdated', updateUIState)
+
+  // Listen for temperature unit changes
+  document.addEventListener('temperatureUnitChanged', updateUIState)
+
+  const temperatureButton = document.getElementById('temperatureButton')
+  const uvIndexButton = document.getElementById('uvIndexButton')
+  const precipitationButton = document.getElementById('precipitationButton')
+  const humidityButton = document.getElementById('humidityButton')
+
+  temperatureButton?.addEventListener('click', () => {
+    isPrecipitationView = false
+    isHumidityView = false
+    isTemperatureView = true
+
+    setActiveButton(
+      [temperatureButton],
+      [uvIndexButton!, precipitationButton!, humidityButton!],
+    )
+    updateUIState()
+  })
+
+  uvIndexButton?.addEventListener('click', () => {
+    isTemperatureView = false
+    isPrecipitationView = false
+    isHumidityView = false
+
+    setActiveButton(
+      [uvIndexButton],
+      [temperatureButton!, precipitationButton!, humidityButton!],
+    )
+    updateUIState()
+  })
+
+  precipitationButton?.addEventListener('click', () => {
+    isTemperatureView = false
+    isHumidityView = false
+    isPrecipitationView = true
+
+    setActiveButton(
+      [precipitationButton],
+      [temperatureButton!, uvIndexButton!, humidityButton!],
+    )
+    updateUIState()
+  })
+
+  humidityButton?.addEventListener('click', () => {
+    isTemperatureView = false
+    isPrecipitationView = false
+    isHumidityView = true
+
+    setActiveButton(
+      [humidityButton],
+      [temperatureButton!, uvIndexButton!, precipitationButton!],
+    )
+    updateUIState()
+  })
+</script>

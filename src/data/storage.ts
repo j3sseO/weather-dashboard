@@ -21,7 +21,11 @@ type WeatherValues = {
   temperature: number
   temperatureAvg: number
   temperatureApparent: number
+  temperatureMin: number
+  temperatureMax: number
   uvHealthConcern: number
+  uvIndex: number
+  humidity: number
   uvIndexAvg: number
   visibility: number
   weatherCode: number
@@ -97,5 +101,11 @@ export const storage = {
 
   clearWeatherData: () => {
     localStorage.removeItem(WEATHER_DATA_KEY)
+  },
+
+  temperatureUnit: {
+    get: () => localStorage.getItem('temperatureUnit') || 'celsius',
+    set: (unit: 'celsius' | 'fahrenheit') =>
+      localStorage.setItem('temperatureUnit', unit),
   },
 }

@@ -1,11 +1,12 @@
 <div
-  class="flex flex-col gap-2 rounded-lg bg-gray-800/50 p-4 text-white backdrop-blur-sm"
+  class="flex h-full flex-col justify-center gap-2 rounded-lg bg-gray-800/50 p-4 text-white backdrop-blur-sm"
   id="day-selector"
 >
 </div>
 
 <script>
   import { storage } from '../data/storage'
+  import { celsiusToFahrenheit } from '../data/utilities'
 
   const today = new Date()
   const currentDayIndex = today.getDay()
@@ -27,11 +28,19 @@
 
   function updateUIState() {
     const weatherData = storage.getWeatherData()
+    const tempUnit = storage.temperatureUnit.get()
 
-    const averageTemp =
-      weatherData?.weatherData.weatherData.timelines.daily.map(
-        day => day.values.temperatureAvg,
-      )
+    const temperatures =
+      weatherData?.weatherData.weatherData.timelines.daily.map(day => ({
+        min:
+          tempUnit === 'fahrenheit'
+            ? celsiusToFahrenheit(day.values.temperatureMin)
+            : day.values.temperatureMin,
+        max:
+          tempUnit === 'fahrenheit'
+            ? celsiusToFahrenheit(day.values.temperatureMax)
+            : day.values.temperatureMax,
+      }))
 
     const daySelector = document.getElementById('day-selector')
     if (daySelector) {
@@ -44,10 +53,23 @@
           }"
         >
           <span class="text-lg">${day}</span>
-          <div class="ml-4 md:ml-32 flex items-center gap-4">
-            <span class="text-lg">
-              ${averageTemp?.[index]?.toFixed(0) ?? ''}°C
-            </span>
+          <div class="flex items-center gap-2">
+             <div class="flex items-center gap-1">
+              <img 
+                src="src/icons/thermometer-high.svg" 
+                alt="High temperature"
+                class="w-6 h-6"
+              />
+              <span class="text-lg">${temperatures?.[index]?.max?.toFixed(0) ?? ''}°</span>
+            </div>
+            <div class="flex items-center gap-1">
+              <img 
+                src="src/icons/thermometer-low.svg" 
+                alt="Low temperature"
+                class="w-6 h-6"
+              />
+              <span class="text-lg">${temperatures?.[index]?.min?.toFixed(0) ?? ''}°</span>
+            </div>
           </div>
         </button>`,
         )
@@ -77,4 +99,7 @@
 
   // Listen for weather data updates
   document.addEventListener('weatherDataUpdated', updateUIState)
+
+  // Listen for temperature unit changes
+  document.addEventListener('temperatureUnitChanged', updateUIState)
 </script>
