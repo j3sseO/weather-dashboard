@@ -29,7 +29,7 @@
   import ChartDataLabels from 'chartjs-plugin-datalabels'
   import { toZonedTime } from 'date-fns-tz'
   import { storage } from '../data/storage'
-  import { celsiusToFahrenheit } from '../data/utilities'
+  import { celsiusToFahrenheit, setActiveButton } from '../data/utilities'
 
   Chart.register(ChartDataLabels)
 
@@ -181,14 +181,6 @@
 
   const temperatureButton = document.getElementById('temperatureButton')
   const uvIndexButton = document.getElementById('uvIndexButton')
-
-  const setActiveButton = (
-    activeButton: HTMLElement,
-    inactiveButton: HTMLElement,
-  ) => {
-    activeButton.classList.add('bg-white/10')
-    inactiveButton.classList.remove('bg-white/10')
-  }
 
   temperatureButton?.addEventListener('click', () => {
     isTemperatureView = true
