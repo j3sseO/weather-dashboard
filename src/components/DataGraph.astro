@@ -1,7 +1,21 @@
-<div
-  class="flex h-[300px] w-full items-center justify-center rounded-lg bg-gray-800/50"
->
-  <canvas id="temperatureChart" class="p-6"></canvas>
+<div class="relative">
+  <div class="absolute -top-12 right-0 flex flex-row items-center gap-2">
+    <button
+      id="temperatureButton"
+      class="rounded-lg border border-white/10 bg-gray-800/50 bg-white/10 px-3 py-1 text-white backdrop-blur-sm transition-colors hover:bg-white/10"
+      >Temperature</button
+    >
+    <button
+      id="uvIndexButton"
+      class="rounded-lg border border-white/10 bg-gray-800/50 px-3 py-1 text-white backdrop-blur-sm transition-colors hover:bg-white/10"
+      >UV index</button
+    >
+  </div>
+  <div
+    class="flex h-[300px] w-full items-center justify-center rounded-lg bg-gray-800/50"
+  >
+    <canvas id="temperatureChart" class="p-6"></canvas>
+  </div>
 </div>
 
 <script>
@@ -20,6 +34,7 @@
   Chart.register(ChartDataLabels)
 
   let chart: Chart<'line', number[], unknown> | null = null
+  let isTemperatureView = true // Track which metric is active
 
   const updateUIState = () => {
     const weatherData = storage.getWeatherData()
@@ -53,19 +68,21 @@
         )
 
       const tempUnit = storage.temperatureUnit.get()
-      const temperatures = weatherData?.weatherData.weatherData.timelines.hourly
+      const values = weatherData?.weatherData.weatherData.timelines.hourly
         .slice(startIndex, endIndex)
         .filter(
           (_, index, array) =>
             index === 0 || index % 2 === 0 || index === array.length - 1,
         )
         .map(hour => {
-          const temp = Number(hour.values.temperature.toFixed(0))
-          return tempUnit === 'fahrenheit' ? celsiusToFahrenheit(temp) : temp
+          if (isTemperatureView) {
+            const temp = Number(hour.values.temperature.toFixed(0))
+            return tempUnit === 'fahrenheit' ? celsiusToFahrenheit(temp) : temp
+          } else return Number(hour.values.uvIndex.toFixed(1))
         })
-        .map(hour => {
-          if (hour === -0) return 0
-          return hour
+        .map(value => {
+          if (value === -0) return 0
+          return value
         })
 
       // If chart exists, destroy it before creating a new one
@@ -77,12 +94,12 @@
       chart = new Chart(ctx, {
         type: 'line',
         data:
-          temperatures && formattedTimes
+          values && formattedTimes
             ? {
                 labels: formattedTimes,
                 datasets: [
                   {
-                    data: temperatures,
+                    data: values,
                     fill: true,
                     borderColor: 'rgba(255, 255, 255, 0.8)',
                     backgroundColor: 'rgba(255, 255, 255, 0.1)',
@@ -108,15 +125,19 @@
                 size: window.innerWidth < 768 ? 10 : 12,
               },
               formatter: function (value: number) {
-                return value + '°' // Add degree symbol to temperature
+                return isTemperatureView ? value + '°' : value
               },
             },
           },
           scales: {
             y: {
               display: false,
-              suggestedMin: temperatures ? Math.min(...temperatures) - 2 : 0,
-              suggestedMax: temperatures ? Math.max(...temperatures) + 2 : 0,
+              suggestedMin: values
+                ? Math.min(...values) - (isTemperatureView ? 2 : 0)
+                : 0,
+              suggestedMax: values
+                ? Math.max(...values) + (isTemperatureView ? 10 : 6)
+                : 0,
             },
             x: {
               grid: { color: 'rgba(255, 255, 255, 0.1)' },
@@ -157,4 +178,27 @@
 
   // Listen for temperature unit changes
   document.addEventListener('temperatureUnitChanged', updateUIState)
+
+  const temperatureButton = document.getElementById('temperatureButton')
+  const uvIndexButton = document.getElementById('uvIndexButton')
+
+  const setActiveButton = (
+    activeButton: HTMLElement,
+    inactiveButton: HTMLElement,
+  ) => {
+    activeButton.classList.add('bg-white/10')
+    inactiveButton.classList.remove('bg-white/10')
+  }
+
+  temperatureButton?.addEventListener('click', () => {
+    isTemperatureView = true
+    setActiveButton(temperatureButton, uvIndexButton!)
+    updateUIState()
+  })
+
+  uvIndexButton?.addEventListener('click', () => {
+    isTemperatureView = false
+    setActiveButton(uvIndexButton, temperatureButton!)
+    updateUIState()
+  })
 </script>
